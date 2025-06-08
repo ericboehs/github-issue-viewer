@@ -1,4 +1,4 @@
-name: EditorConfig
+name: CI / editorconfig
 
 on:
   pull_request:
@@ -15,3 +15,6 @@ jobs:
 
     - name: EditorConfig Checker
       uses: editorconfig-checker/action-editorconfig-checker@main
+    
+    - name: Run editorconfig-checker
+      run: editorconfig-checker
