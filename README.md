@@ -73,6 +73,12 @@ bin/rubocop        # Check Ruby style
 bin/brakeman       # Security analysis
 ```
 
+### CI Monitoring
+```bash
+bin/watch-ci       # Watch CI status with auto-refresh (default: 10s)
+bin/watch-ci 5     # Custom refresh interval (5 seconds)
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
