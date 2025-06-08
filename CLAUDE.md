@@ -98,6 +98,6 @@ This project follows Rails Omakase conventions. RuboCop is configured to enforce
 
 ### Development Hooks
 This project includes intelligent git hooks:
-- **Pre-commit**: Runs EditorConfig, rubocop, and tests for Claude-authored commits
+- **Pre-commit**: Runs EditorConfig, rubocop, and tests for all commits
 - **Post-checkout**: Automatically runs `bundle install` and `db:migrate` when needed
 - Install with: `bin/install-hooks`

@@ -1,17 +1,8 @@
 #!/bin/bash
 
-# Pre-commit hook that runs EditorConfig, rubocop, and tests for Claude-authored commits
-# Only runs when the commit author includes "claude" (case-insensitive)
+# Pre-commit hook that runs EditorConfig, rubocop, and tests for all commits
 
-# Get the commit author name
-AUTHOR_NAME=$(git config user.name)
-
-# Check if author name contains "claude" (case-insensitive)
-if [[ ! "$AUTHOR_NAME" =~ [Cc][Ll][Aa][Uu][Dd][Ee] ]]; then
-  exit 0
-fi
-
-echo "Claude-authored commit detected. Running pre-commit checks..."
+echo "Running pre-commit checks..."
 
 # Check if editorconfig-checker is available
 if command -v editorconfig-checker >/dev/null 2>&1; then

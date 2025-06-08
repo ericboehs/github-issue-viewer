@@ -39,7 +39,7 @@ bin/install-hooks
 
 #### Available Hooks
 
-- **pre-commit**: Runs for Claude-authored commits only
+- **pre-commit**: Runs for all commits
   - Checks EditorConfig compliance (if `editorconfig-checker` is installed)
   - Executes `bin/rubocop` to check code style (if available)
   - Runs `bin/rails test` to ensure tests pass (if available)
