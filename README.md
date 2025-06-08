@@ -1,24 +1,70 @@
-# README
+# GitHub Issue Viewer
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A Rails application for viewing and managing GitHub issues with a clean, modern interface.
 
-Things you may want to cover:
+## Setup
 
-* Ruby version
+### Prerequisites
+- Ruby 3.3.0 or higher
+- SQLite3
+- Git
 
-* System dependencies
+### Installation
 
-* Configuration
+1. Clone the repository:
+```bash
+git clone https://github.com/oddboehs/github-issue-viewer.git
+cd github-issue-viewer
+```
 
-* Database creation
+2. Install dependencies and setup the database:
+```bash
+bin/setup
+```
 
-* Database initialization
+3. Start the development server:
+```bash
+bin/dev
+```
 
-* How to run the test suite
+The application will be available at http://localhost:3000.
 
-* Services (job queues, cache servers, search engines, etc.)
+## Development
 
-* Deployment instructions
+### Running tests
+```bash
+bin/rails test
+```
 
-* ...
+### Code quality checks
+```bash
+bin/rubocop        # Check Ruby style
+bin/brakeman       # Security analysis
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Copyright
+
+Copyright (c) 2025 Eric Boehs
+
+## Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+### Commit Messages
+- Use [conventional commits](https://www.conventionalcommits.org/) format
+- Examples:
+  - `feat: add user authentication`
+  - `fix: resolve issue with issue pagination`
+  - `docs: update setup instructions`
+
+### Pull Requests
+- Link issues in your commit messages to automatically close them when the PR is merged
+- Use one of these formats in your commit message:
+  - `Fixes #123`
+  - `Closes #123`
+  - `Resolves #123`
+- Example: `feat: add issue filtering\n\nCloses #123`
