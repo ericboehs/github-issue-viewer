@@ -39,6 +39,12 @@ bin/rubocop -a     # Auto-fix style issues
 bin/brakeman       # Security analysis
 ```
 
+### CI Monitoring
+```bash
+bin/watch-ci       # Watch CI status with auto-refresh
+bin/watch-ci 5     # Custom refresh interval (5 seconds)
+```
+
 ### JavaScript Dependencies
 ```bash
 bin/importmap pin <package>      # Add JavaScript package
@@ -73,3 +79,25 @@ This project follows Rails Omakase conventions. RuboCop is configured to enforce
 - Main branch: main
 - PRs should follow conventional commits format
 - Link issues in commit messages (e.g., "Closes #123")
+
+## Claude Code Workflow
+
+### After Pushing to a PR
+**IMPORTANT**: After every push to a PR branch, you MUST:
+
+1. **Run `bin/watch-ci`** to monitor CI status in real-time
+2. **Wait for all checks to complete** (green ✅ or red ❌)
+3. **If any checks fail (red ❌)**:
+  - Use `gh run view --log-failed` to see failure details
+  - Fix the issues immediately
+  - Commit and push the fixes
+  - Repeat this process until all checks pass
+  - **Give up after 4 attempts** if issues persist and ask for help
+
+**Never leave a PR with failing CI checks.** Always resolve failures before moving on to other tasks.
+
+### Development Hooks
+This project includes intelligent git hooks:
+- **Pre-commit**: Runs EditorConfig, rubocop, and tests for all commits
+- **Post-checkout**: Automatically runs `bundle install` and `db:migrate` when needed
+- Install with: `bin/install-hooks`
