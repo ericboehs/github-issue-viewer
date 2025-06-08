@@ -39,7 +39,7 @@ if [ -z "$BRANCH" ]; then
   exit 1
 fi
 
-echo "🔍 Watching CI for branch: ${BLUE}$BRANCH${NC}"
+echo -e "🔍 Watching CI for branch: ${BLUE}$BRANCH${NC}"
 echo "⏱️  Refresh interval: ${INTERVAL}s (press Ctrl+C to stop)"
 echo ""
 
@@ -48,7 +48,7 @@ show_ci_status() {
   local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
 
   clear_screen
-  echo "🔍 CI Status for branch: ${BLUE}$BRANCH${NC}"
+  echo -e "🔍 CI Status for branch: ${BLUE}$BRANCH${NC}"
   echo "⏱️  Last updated: $timestamp (refreshing every ${INTERVAL}s)"
   echo "📝 Press Ctrl+C to stop watching"
   echo ""
