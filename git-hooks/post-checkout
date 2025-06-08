@@ -5,7 +5,7 @@
 
 # Arguments passed by git:
 # $1 = previous HEAD
-# $2 = new HEAD  
+# $2 = new HEAD
 # $3 = flag indicating whether the checkout was a branch checkout (1) or file checkout (0)
 
 PREV_HEAD=$1
