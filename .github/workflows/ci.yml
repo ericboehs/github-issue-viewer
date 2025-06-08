@@ -6,6 +6,19 @@ on:
     branches: [ main ]
 
 jobs:
+  editorconfig:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: EditorConfig Checker
+      uses: editorconfig-checker/action-editorconfig-checker@main
+
+    - name: Run editorconfig-checker
+      run: editorconfig-checker
+
   scan_ruby:
     runs-on: ubuntu-latest
 
