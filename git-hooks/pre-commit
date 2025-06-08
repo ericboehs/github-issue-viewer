@@ -24,21 +24,35 @@ if command -v editorconfig-checker >/dev/null 2>&1; then
   fi
 else
   echo "⚠️  editorconfig-checker not found. Skipping EditorConfig check."
-  echo "   Install with: npm install -g editorconfig-checker"
+  echo "   💡 To enable EditorConfig validation, install with:"
+  echo "   npm install -g editorconfig-checker"
+  echo ""
 fi
 
 # Run rubocop
 echo "Running rubocop..."
-if ! bin/rubocop; then
-  echo "❌ Rubocop failed. Please fix the issues and try again."
-  exit 1
+if [ -f "bin/rubocop" ]; then
+  if ! bin/rubocop; then
+    echo "❌ Rubocop failed. Please fix the issues and try again."
+    exit 1
+  fi
+else
+  echo "⚠️  bin/rubocop not found. Skipping code style check."
+  echo "   💡 Make sure you're in a Rails project with rubocop configured."
+  echo ""
 fi
 
 # Run tests
 echo "Running tests..."
-if ! bin/rails test; then
-  echo "❌ Tests failed. Please fix the failing tests and try again."
-  exit 1
+if [ -f "bin/rails" ]; then
+  if ! bin/rails test; then
+    echo "❌ Tests failed. Please fix the failing tests and try again."
+    exit 1
+  fi
+else
+  echo "⚠️  bin/rails not found. Skipping test suite."
+  echo "   💡 Make sure you're in a Rails project directory."
+  echo ""
 fi
 
 echo "✅ All pre-commit checks passed!"

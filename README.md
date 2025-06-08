@@ -41,9 +41,10 @@ bin/install-hooks
 
 - **pre-commit**: Runs for Claude-authored commits only
   - Checks EditorConfig compliance (if `editorconfig-checker` is installed)
-  - Executes `bin/rubocop` to check code style
-  - Runs `bin/rails test` to ensure tests pass
-  - Prevents commit if any check fails
+  - Executes `bin/rubocop` to check code style (if available)
+  - Runs `bin/rails test` to ensure tests pass (if available)
+  - Provides helpful installation messages for missing tools
+  - Prevents commit if any enabled check fails
 
 - **post-checkout**: Runs automatically when switching branches
   - Runs `bundle install` if Gemfile.lock changed
