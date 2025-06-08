@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Script to install git hooks for development
+
+set -e
+
+echo "Installing git hooks..."
+
+# Create .git/hooks directory if it doesn't exist
+mkdir -p .git/hooks
+
+# Copy hooks from git-hooks directory
+if [ -f "git-hooks/pre-commit" ]; then
+  cp git-hooks/pre-commit .git/hooks/pre-commit
+  chmod +x .git/hooks/pre-commit
+  echo "✅ Installed pre-commit hook"
+else
+  echo "❌ git-hooks/pre-commit not found"
+  exit 1
+fi
+
+if [ -f "git-hooks/post-checkout" ]; then
+  cp git-hooks/post-checkout .git/hooks/post-checkout
+  chmod +x .git/hooks/post-checkout
+  echo "✅ Installed post-checkout hook"
+else
+  echo "❌ git-hooks/post-checkout not found"
+  exit 1
+fi
+
+echo ""
+echo "🎉 Git hooks installed successfully!"
+echo ""
+echo "Hooks installed:"
+echo "  - pre-commit: Runs rubocop and tests for Claude-authored commits"
+echo "  - post-checkout: Runs bundle install and db:migrate when needed"

@@ -29,6 +29,30 @@ bin/dev
 
 The application will be available at http://localhost:3000.
 
+### Git Hooks Installation
+
+This project includes git hooks to ensure code quality and automate common tasks:
+
+```bash
+bin/install-hooks
+```
+
+#### Available Hooks
+
+- **pre-commit**: Runs for Claude-authored commits only
+  - Executes `bin/rubocop` to check code style
+  - Runs `bin/rails test` to ensure tests pass
+  - Prevents commit if either check fails
+
+- **post-checkout**: Runs automatically when switching branches
+  - Runs `bundle install` if Gemfile.lock changed
+  - Runs `bin/rails db:migrate` if there are pending migrations
+  - Skips during merge/rebase operations and detached HEAD state
+
+### EditorConfig
+
+This project uses [EditorConfig](https://editorconfig.org/) to maintain consistent coding styles. Make sure your editor supports EditorConfig, or install the appropriate plugin.
+
 ## Development
 
 ### Running tests

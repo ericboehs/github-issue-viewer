@@ -1,0 +1,17 @@
+name: EditorConfig
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  editorconfig:
+    runs-on: ubuntu-latest
+    name: Check EditorConfig compliance
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: EditorConfig Checker
+      uses: editorconfig-checker/action-editorconfig-checker@main

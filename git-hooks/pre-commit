@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Pre-commit hook that runs rubocop and tests for Claude-authored commits
+# Only runs when the commit author includes "claude" (case-insensitive)
+
+# Get the commit author name
+AUTHOR_NAME=$(git config user.name)
+
+# Check if author name contains "claude" (case-insensitive)
+if [[ ! "$AUTHOR_NAME" =~ [Cc][Ll][Aa][Uu][Dd][Ee] ]]; then
+  exit 0
+fi
+
+echo "Claude-authored commit detected. Running pre-commit checks..."
+
+# Run rubocop
+echo "Running rubocop..."
+if ! bin/rubocop; then
+  echo "❌ Rubocop failed. Please fix the issues and try again."
+  exit 1
+fi
+
+# Run tests
+echo "Running tests..."
+if ! bin/rails test; then
+  echo "❌ Tests failed. Please fix the failing tests and try again."
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
+exit 0
