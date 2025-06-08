@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Pre-commit hook that runs rubocop and tests for Claude-authored commits
+# Pre-commit hook that runs EditorConfig, rubocop, and tests for Claude-authored commits
 # Only runs when the commit author includes "claude" (case-insensitive)
 
 # Get the commit author name
@@ -12,6 +12,20 @@ if [[ ! "$AUTHOR_NAME" =~ [Cc][Ll][Aa][Uu][Dd][Ee] ]]; then
 fi
 
 echo "Claude-authored commit detected. Running pre-commit checks..."
+
+# Check if editorconfig-checker is available
+if command -v editorconfig-checker >/dev/null 2>&1; then
+  # Run EditorConfig check
+  echo "Running EditorConfig check..."
+  if ! editorconfig-checker; then
+    echo "❌ EditorConfig check failed. Please fix formatting issues and try again."
+    echo "💡 Tip: Most editors can auto-fix these with EditorConfig plugin installed."
+    exit 1
+  fi
+else
+  echo "⚠️  editorconfig-checker not found. Skipping EditorConfig check."
+  echo "   Install with: npm install -g editorconfig-checker"
+fi
 
 # Run rubocop
 echo "Running rubocop..."

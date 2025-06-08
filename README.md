@@ -40,9 +40,10 @@ bin/install-hooks
 #### Available Hooks
 
 - **pre-commit**: Runs for Claude-authored commits only
+  - Checks EditorConfig compliance (if `editorconfig-checker` is installed)
   - Executes `bin/rubocop` to check code style
   - Runs `bin/rails test` to ensure tests pass
-  - Prevents commit if either check fails
+  - Prevents commit if any check fails
 
 - **post-checkout**: Runs automatically when switching branches
   - Runs `bundle install` if Gemfile.lock changed
@@ -52,6 +53,11 @@ bin/install-hooks
 ### EditorConfig
 
 This project uses [EditorConfig](https://editorconfig.org/) to maintain consistent coding styles. Make sure your editor supports EditorConfig, or install the appropriate plugin.
+
+For command-line validation, install the EditorConfig checker:
+```bash
+npm install -g editorconfig-checker
+```
 
 ## Development
 
