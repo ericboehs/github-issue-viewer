@@ -88,10 +88,11 @@ This project follows Rails Omakase conventions. RuboCop is configured to enforce
 1. **Run `bin/watch-ci`** to monitor CI status in real-time
 2. **Wait for all checks to complete** (green ✅ or red ❌)
 3. **If any checks fail (red ❌)**:
-   - Use `gh run view --log-failed` to see failure details
-   - Fix the issues immediately
-   - Commit and push the fixes
-   - Repeat this process until all checks pass
+  - Use `gh run view --log-failed` to see failure details
+  - Fix the issues immediately
+  - Commit and push the fixes
+  - Repeat this process until all checks pass
+  - **Give up after 4 attempts** if issues persist and ask for help
 
 **Never leave a PR with failing CI checks.** Always resolve failures before moving on to other tasks.
 

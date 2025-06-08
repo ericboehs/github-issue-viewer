@@ -46,18 +46,18 @@ echo ""
 # Function to display CI status
 show_ci_status() {
   local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-  
+
   clear_screen
   echo "🔍 CI Status for branch: ${BLUE}$BRANCH${NC}"
   echo "⏱️  Last updated: $timestamp (refreshing every ${INTERVAL}s)"
   echo "📝 Press Ctrl+C to stop watching"
   echo ""
-  
+
   # Get PR checks
   if PR_CHECKS=$(gh pr checks 2>/dev/null); then
     echo "📊 CI Check Results:"
     echo "===================="
-    
+
     # Parse and colorize the output
     while IFS=$'\t' read -r name status duration url; do
       case "$status" in
@@ -76,7 +76,7 @@ show_ci_status() {
           ;;
       esac
     done <<< "$PR_CHECKS"
-    
+
     # Check if all passed
     if echo "$PR_CHECKS" | grep -q "fail"; then
       echo ""
@@ -93,7 +93,7 @@ show_ci_status() {
     echo "❓ No PR found for current branch or no CI runs available"
     echo "💡 Make sure you've pushed your branch and created a PR"
   fi
-  
+
   echo ""
   echo "🛠️  Quick commands:"
   echo "   gh pr view    - View PR details"
