@@ -82,12 +82,16 @@ show_ci_status() {
       echo ""
       echo -e "${RED}❌ Some checks failed${NC}"
       echo "💡 Use 'gh run view --log-failed' to see failure details"
+      return 1
     elif echo "$PR_CHECKS" | grep -q "pending"; then
       echo ""
       echo -e "${YELLOW}⏳ Checks still running...${NC}"
+      return 0
     else
       echo ""
       echo -e "${GREEN}✅ All checks passed!${NC}"
+      echo "🎉 Exiting since all checks have passed"
+      return 2
     fi
   else
     echo "❓ No PR found for current branch or no CI runs available"
@@ -103,9 +107,25 @@ show_ci_status() {
 
 # Initial display
 show_ci_status
+if [ $? -eq 2 ]; then
+  # All checks already passed on initial check
+  exit 0
+fi
 
 # Watch loop
 while true; do
   sleep $INTERVAL
   show_ci_status
+  case $? in
+    2)
+      # All checks passed, exit successfully
+      exit 0
+      ;;
+    1)
+      # Some checks failed, continue watching
+      ;;
+    0)
+      # Checks still running, continue watching
+      ;;
+  esac
 done
