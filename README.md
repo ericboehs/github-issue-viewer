@@ -1,24 +1,66 @@
-# README
+# GitHub Issue Viewer
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A Rails application for viewing and managing GitHub issues with a clean, intuitive interface.
 
-Things you may want to cover:
+## Setup
 
-* Ruby version
+This is a Ruby on Rails application. Follow these steps to get it running:
 
-* System dependencies
+### Prerequisites
 
-* Configuration
+- Ruby 3.4.0 (see `.ruby-version`)
+- SQLite3
+- Node.js (for asset pipeline)
 
-* Database creation
+### Installation
 
-* Database initialization
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/oddboehs/github-issue-viewer.git
+   cd github-issue-viewer
+   ```
 
-* How to run the test suite
+2. Install dependencies:
+   ```bash
+   bundle install
+   ```
 
-* Services (job queues, cache servers, search engines, etc.)
+3. Setup the database:
+   ```bash
+   rails db:prepare
+   ```
 
-* Deployment instructions
+4. Start the development server:
+   ```bash
+   rails server
+   ```
 
-* ...
+5. Visit `http://localhost:3000` in your browser
+
+### Testing
+
+Run the test suite:
+```bash
+rails test
+```
+
+For system tests:
+```bash
+rails test:system
+```
+
+## Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+- Use conventional commit messages (e.g., `feat:`, `fix:`, `docs:`, `chore:`)
+- Link your commits to issues where applicable using `Fixes #issue-number`
+- Follow the existing code style (we use RuboCop Rails Omakase)
+- Write tests for new features
+- Update documentation as needed
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2024 Eric Boehs
