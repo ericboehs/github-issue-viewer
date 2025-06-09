@@ -41,7 +41,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h2", "rails/rails"
-    assert_select ".divide-y .p-4", count: 2 # 2 issue cards
+    assert_select ".divide-y .p-3", count: 2 # 2 issue cards
   end
 
   test "should handle authentication error" do
