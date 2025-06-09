@@ -1,9 +1,9 @@
 require "test_helper"
 require "webmock/minitest"
 
-class GitHubIssuesServiceTest < ActiveSupport::TestCase
+class GithubIssuesServiceTest < ActiveSupport::TestCase
   def setup
-    @service = GitHubIssuesService.new("rails", "rails", token: "test_token")
+    @service = GithubIssuesService.new("rails", "rails", token: "test_token")
     WebMock.enable!
   end
 
@@ -13,7 +13,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   end
 
   test "should initialize with owner, repository name and token" do
-    service = GitHubIssuesService.new("owner", "repo", token: "token")
+    service = GithubIssuesService.new("owner", "repo", token: "token")
     assert_equal "owner", service.instance_variable_get(:@owner)
     assert_equal "repo", service.instance_variable_get(:@repository_name)
     assert_equal "token", service.instance_variable_get(:@token)
@@ -21,7 +21,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
 
   test "should use environment token when none provided" do
     ENV["GITHUB_TOKEN"] = "env_token"
-    service = GitHubIssuesService.new("owner", "repo")
+    service = GithubIssuesService.new("owner", "repo")
     assert_equal "env_token", service.instance_variable_get(:@token)
   ensure
     ENV.delete("GITHUB_TOKEN")
@@ -29,8 +29,8 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
 
   test "should raise authentication error when no token provided" do
     ENV.delete("GITHUB_TOKEN")
-    error = assert_raises(GitHubIssuesService::AuthenticationError) do
-      GitHubIssuesService.new("owner", "repo")
+    error = assert_raises(GithubIssuesService::AuthenticationError) do
+      GithubIssuesService.new("owner", "repo")
     end
     assert_equal "GitHub token is required", error.message
   end
@@ -56,7 +56,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   test "should handle repository not found error" do
     stub_repository_not_found_response
 
-    error = assert_raises(GitHubIssuesService::RepositoryNotFoundError) do
+    error = assert_raises(GithubIssuesService::RepositoryNotFoundError) do
       @service.fetch_issues
     end
     assert_match(/Repository rails\/rails not found/, error.message)
@@ -65,7 +65,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   test "should handle authentication errors" do
     stub_authentication_error_response
 
-    error = assert_raises(GitHubIssuesService::AuthenticationError) do
+    error = assert_raises(GithubIssuesService::AuthenticationError) do
       @service.fetch_issues
     end
     assert_match(/Invalid or missing GitHub token/, error.message)
@@ -75,7 +75,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   test "should handle rate limit errors" do
     stub_rate_limit_error_response
 
-    error = assert_raises(GitHubIssuesService::RateLimitError) do
+    error = assert_raises(GithubIssuesService::RateLimitError) do
       @service.fetch_issues
     end
     assert_match(/GitHub API rate limit exceeded/, error.message)
@@ -85,7 +85,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   test "should handle network timeout errors" do
     stub_timeout_error
 
-    error = assert_raises(GitHubIssuesService::GitHubApiError) do
+    error = assert_raises(GithubIssuesService::GithubApiError) do
       @service.fetch_issues
     end
     assert_match(/Network timeout/, error.message)
@@ -94,7 +94,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   test "should handle invalid JSON response" do
     stub_invalid_json_response
 
-    error = assert_raises(GitHubIssuesService::GitHubApiError) do
+    error = assert_raises(GithubIssuesService::GithubApiError) do
       @service.fetch_issues
     end
     assert_match(/Invalid JSON response/, error.message)
@@ -103,7 +103,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   test "should handle GraphQL errors in response" do
     stub_graphql_error_response
 
-    error = assert_raises(GitHubIssuesService::GitHubApiError) do
+    error = assert_raises(GithubIssuesService::GithubApiError) do
       @service.fetch_issues
     end
     assert_match(/GraphQL errors: Field 'invalid' doesn't exist/, error.message)
@@ -121,7 +121,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   end
 
   test "should pass state parameter correctly" do
-    request_stub = stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    request_stub = stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .with(body: hash_including(query: /states: \[CLOSED\]/))
       .to_return(status: 200, body: minimal_successful_response.to_json)
 
@@ -131,7 +131,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   end
 
   test "should pass pagination parameters correctly" do
-    request_stub = stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    request_stub = stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .with(body: hash_including(query: /first: 50.*after: "test_cursor"/m))
       .to_return(status: 200, body: minimal_successful_response.to_json)
 
@@ -143,37 +143,37 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
   private
 
   def stub_successful_graphql_response
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_return(status: 200, body: successful_graphql_response.to_json)
   end
 
   def stub_repository_not_found_response
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_return(status: 200, body: { data: { repository: nil } }.to_json)
   end
 
   def stub_authentication_error_response
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_return(status: 401, body: { message: "Bad credentials" }.to_json)
   end
 
   def stub_rate_limit_error_response
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_return(status: 403, body: { message: "API rate limit exceeded" }.to_json)
   end
 
   def stub_timeout_error
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_timeout
   end
 
   def stub_invalid_json_response
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_return(status: 200, body: "invalid json{")
   end
 
   def stub_graphql_error_response
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_return(status: 200, body: {
         errors: [ { message: "Field 'invalid' doesn't exist on type 'Repository'" } ]
       }.to_json)
@@ -181,7 +181,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
 
   def stub_paginated_graphql_responses
     # First page
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .with(body: hash_including(query: /first: 1(?![\d])/)) # exactly 1, not 10+
       .to_return(status: 200, body: {
         data: {
@@ -195,7 +195,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
       }.to_json)
 
     # Second page
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .with(body: hash_including(query: /after: "cursor1"/))
       .to_return(status: 200, body: {
         data: {
@@ -209,7 +209,7 @@ class GitHubIssuesServiceTest < ActiveSupport::TestCase
       }.to_json)
 
     # Third page
-    stub_request(:post, GitHubIssuesService::GITHUB_GRAPHQL_URL)
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .with(body: hash_including(query: /after: "cursor2"/))
       .to_return(status: 200, body: {
         data: {

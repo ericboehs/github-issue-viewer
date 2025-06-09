@@ -8,7 +8,7 @@ namespace :github do
     end
 
     begin
-      service = GitHubIssuesService.new(args[:owner], args[:repo])
+      service = GithubIssuesService.new(args[:owner], args[:repo])
 
       puts "Fetching issues from #{args[:owner]}/#{args[:repo]}..."
 
@@ -40,19 +40,19 @@ namespace :github do
         end
       end
 
-    rescue GitHubIssuesService::AuthenticationError => e
+    rescue GithubIssuesService::AuthenticationError => e
       puts "❌ Authentication Error: #{e.message}"
       puts "Make sure to set your GITHUB_TOKEN environment variable:"
       puts "export GITHUB_TOKEN=your_token_here"
       exit 1
-    rescue GitHubIssuesService::RepositoryNotFoundError => e
+    rescue GithubIssuesService::RepositoryNotFoundError => e
       puts "❌ Repository Error: #{e.message}"
       exit 1
-    rescue GitHubIssuesService::RateLimitError => e
+    rescue GithubIssuesService::RateLimitError => e
       puts "❌ Rate Limit Error: #{e.message}"
       puts "Please wait before making more requests."
       exit 1
-    rescue GitHubIssuesService::GitHubApiError => e
+    rescue GithubIssuesService::GitHubApiError => e
       puts "❌ GitHub API Error: #{e.message}"
       exit 1
     rescue => e
@@ -71,7 +71,7 @@ namespace :github do
     end
 
     begin
-      service = GitHubIssuesService.new(args[:owner], args[:repo])
+      service = GithubIssuesService.new(args[:owner], args[:repo])
 
       puts "Fetching ALL issues from #{args[:owner]}/#{args[:repo]}..."
       puts "This may take a while for repositories with many issues..."
@@ -100,19 +100,19 @@ namespace :github do
         end
       end
 
-    rescue GitHubIssuesService::AuthenticationError => e
+    rescue GithubIssuesService::AuthenticationError => e
       puts "❌ Authentication Error: #{e.message}"
       puts "Make sure to set your GITHUB_TOKEN environment variable:"
       puts "export GITHUB_TOKEN=your_token_here"
       exit 1
-    rescue GitHubIssuesService::RepositoryNotFoundError => e
+    rescue GithubIssuesService::RepositoryNotFoundError => e
       puts "❌ Repository Error: #{e.message}"
       exit 1
-    rescue GitHubIssuesService::RateLimitError => e
+    rescue GithubIssuesService::RateLimitError => e
       puts "❌ Rate Limit Error: #{e.message}"
       puts "Please wait before making more requests."
       exit 1
-    rescue GitHubIssuesService::GitHubApiError => e
+    rescue GithubIssuesService::GitHubApiError => e
       puts "❌ GitHub API Error: #{e.message}"
       exit 1
     rescue => e
@@ -134,10 +134,10 @@ namespace :github do
     puts "   rails github:fetch_all_issues[owner,repo]"
     puts
     puts "3. Use in Rails console or script:"
-    puts "   rails runner \"puts GitHubIssuesService.new('rails', 'rails').fetch_issues.inspect\""
+    puts "   rails runner \"puts GithubIssuesService.new('rails', 'rails').fetch_issues.inspect\""
     puts
     puts "4. Use in Ruby code:"
-    puts "   service = GitHubIssuesService.new('owner', 'repo')"
+    puts "   service = GithubIssuesService.new('owner', 'repo')"
     puts "   issues = service.fetch_issues(limit: 20, state: 'CLOSED')"
     puts "   all_issues = service.fetch_all_issues"
     puts

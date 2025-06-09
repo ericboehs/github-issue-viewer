@@ -2,10 +2,10 @@ require "net/http"
 require "json"
 require "uri"
 
-class GitHubIssuesService
+class GithubIssuesService
   GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
 
-  class GitHubApiError < StandardError
+  class GithubApiError < StandardError
     attr_reader :response_code, :response_body
 
     def initialize(message, response_code: nil, response_body: nil)
@@ -15,9 +15,9 @@ class GitHubIssuesService
     end
   end
 
-  class RateLimitError < GitHubApiError; end
-  class AuthenticationError < GitHubApiError; end
-  class RepositoryNotFoundError < GitHubApiError; end
+  class RateLimitError < GithubApiError; end
+  class AuthenticationError < GithubApiError; end
+  class RepositoryNotFoundError < GithubApiError; end
 
   def initialize(owner, repository_name, token: nil)
     @owner = owner
@@ -33,9 +33,9 @@ class GitHubIssuesService
     response = execute_graphql_query(query)
     parse_issues_response(response)
   rescue Net::ReadTimeout, Net::OpenTimeout => e
-    raise GitHubApiError, "Network timeout: #{e.message}"
+    raise GithubApiError, "Network timeout: #{e.message}"
   rescue JSON::ParserError => e
-    raise GitHubApiError, "Invalid JSON response: #{e.message}"
+    raise GithubApiError, "Invalid JSON response: #{e.message}"
   end
 
   def fetch_all_issues(state: "OPEN", batch_size: 20)
@@ -144,7 +144,7 @@ class GitHubIssuesService
           response_code: response.code,
           response_body: response.body)
       else
-        raise GitHubApiError.new("Forbidden access to GitHub API",
+        raise GithubApiError.new("Forbidden access to GitHub API",
           response_code: response.code,
           response_body: response.body)
       end
@@ -153,11 +153,11 @@ class GitHubIssuesService
                                       response_code: response.code,
                                       response_body: response.body)
     when 422
-      raise GitHubApiError.new("Unprocessable entity - check your GraphQL query",
+      raise GithubApiError.new("Unprocessable entity - check your GraphQL query",
         response_code: response.code,
         response_body: response.body)
     else
-      raise GitHubApiError.new("GitHub API error: #{response.code} #{response.message}",
+      raise GithubApiError.new("GitHub API error: #{response.code} #{response.message}",
         response_code: response.code,
         response_body: response.body)
     end
@@ -166,7 +166,7 @@ class GitHubIssuesService
   def parse_issues_response(response)
     if response[:errors]
       error_messages = response[:errors].map { |e| e[:message] }.join(", ")
-      raise GitHubApiError, "GraphQL errors: #{error_messages}"
+      raise GithubApiError, "GraphQL errors: #{error_messages}"
     end
 
     repository_data = response.dig(:data, :repository)
