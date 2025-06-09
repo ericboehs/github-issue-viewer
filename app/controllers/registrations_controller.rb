@@ -10,6 +10,8 @@ class RegistrationsController < ApplicationController
 
     if @user.save
       start_new_session_for @user
+      # Store GitHub token in session if provided
+      session[:github_token] = params[:user][:github_token] if params[:user][:github_token].present?
       redirect_to issues_path, notice: "Welcome, #{@user.email_address}! You have signed up successfully."
     else
       render :new, status: :unprocessable_entity
@@ -19,6 +21,6 @@ class RegistrationsController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:email_address, :password, :password_confirmation, :github_token)
+    params.require(:user).permit(:email_address, :password, :password_confirmation)
   end
 end

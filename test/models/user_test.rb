@@ -36,22 +36,6 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "test@example.com", user.email_address
   end
 
-  test "should encrypt github token" do
-    user = User.create!(email_address: "test@example.com", password: "password123", github_token: "ghp_secret123")
-
-    # Token should be encrypted in database
-    raw_token = user.read_attribute_before_type_cast(:github_token)
-    assert_not_equal "ghp_secret123", raw_token
-
-    # But should decrypt properly when accessed
-    assert_equal "ghp_secret123", user.github_token
-  end
-
-  test "should allow nil github token" do
-    user = User.create!(email_address: "test@example.com", password: "password123", github_token: nil)
-    assert user.valid?
-    assert_nil user.github_token
-  end
 
   test "should have many sessions" do
     user = User.create!(email_address: "test@example.com", password: "password123")

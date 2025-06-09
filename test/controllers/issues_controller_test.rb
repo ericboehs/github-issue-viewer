@@ -4,7 +4,6 @@ require "webmock/minitest"
 class IssuesControllerTest < ActionDispatch::IntegrationTest
   def setup
     @user = users(:one)
-    @user.update!(github_token: "test_token")
     sign_in_as(@user)
     WebMock.enable!
   end
@@ -15,20 +14,20 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get index" do
+    set_github_token("test_token")
     get issues_url
     assert_response :success
     assert_select "label", "Repository Owner"
   end
 
   test "should redirect to account if no github token" do
-    @user.update!(github_token: nil)
-
     get issues_url
     assert_redirected_to account_path
     assert_equal "Please configure your GitHub token to view issues.", flash[:alert]
   end
 
   test "should show empty state when no repository provided" do
+    set_github_token("test_token")
     get issues_url
     assert_response :success
     assert_select ".text-center h3", "No Repository Selected"
@@ -36,6 +35,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should fetch and display issues successfully" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails" }
 
@@ -46,6 +46,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle authentication error" do
     stub_authentication_error_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails" }
 
@@ -55,6 +56,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle repository not found error" do
     stub_repository_not_found_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "nonexistent" }
 
@@ -64,6 +66,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle rate limit error" do
     stub_rate_limit_error_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails" }
 
@@ -73,6 +76,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle generic github api error" do
     stub_generic_error_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails" }
 
@@ -84,6 +88,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
     request_stub = stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .with(body: hash_including(query: /states: \[CLOSED\]/))
       .to_return(status: 200, body: minimal_successful_response.to_json)
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", state: "closed" }
 
@@ -93,6 +98,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should sort by updated date" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", sort: "updated", direction: "asc" }
 
@@ -103,6 +109,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should sort by title" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", sort: "title", direction: "asc" }
 
@@ -112,6 +119,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should limit per_page parameter" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", per_page: "150" }
 
@@ -121,6 +129,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle minimum per_page parameter" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", per_page: "0" }
 
@@ -130,6 +139,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should show no issues state when repository has no issues" do
     stub_empty_repository_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails" }
 
@@ -145,10 +155,11 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should handle unexpected exceptions" do
-    @user.update!(github_token: "test_token")
+    # Token is already set in setup
     # Stub to raise an unexpected error
     stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
       .to_raise(StandardError.new("Unexpected error"))
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails" }
 
@@ -158,6 +169,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle all sorting options" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", sort: "state", direction: "asc" }
 
@@ -166,6 +178,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should redirect to last repo from cookie when no params provided" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     # Set up cookie with last repo
     cookies[:last_repo] = { owner: "rails", repository: "rails" }.to_json
@@ -176,6 +189,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should handle malformed cookie gracefully" do
+    set_github_token("test_token")
     # Set up malformed cookie
     cookies[:last_repo] = "invalid json{"
 
@@ -186,6 +200,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should handle cookie with missing fields" do
+    set_github_token("test_token")
     # Set up cookie with incomplete data
     cookies[:last_repo] = { owner: "rails" }.to_json
 
@@ -197,6 +212,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle default sorting with desc direction" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", sort: "created", direction: "desc" }
 
@@ -205,6 +221,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
   test "should calculate total pages correctly" do
     stub_successful_github_response
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails", per_page: "3" }
 
@@ -226,6 +243,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
           }
         }
       }.to_json)
+    set_github_token("test_token")
 
     get issues_url, params: { owner: "rails", repository: "rails" }
 
@@ -354,6 +372,11 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
   def sign_in_as(user)
     post session_url, params: { email_address: user.email_address, password: "password" }
   end
+
+  def set_github_token(token)
+    patch account_path, params: { user: { github_token: token } }
+  end
+
 
   def sign_out
     delete session_url
