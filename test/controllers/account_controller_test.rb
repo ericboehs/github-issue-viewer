@@ -6,8 +6,13 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     post session_path, params: { email_address: @user.email_address, password: "password123" }
   end
 
+  def set_github_token(token)
+    patch account_path, params: { user: { github_token: token } }
+  end
+
   test "should get show when authenticated and token configured" do
-    @user.update!(github_token: "ghp_test123")
+    # Set the token in session by making a post to update account
+    patch account_path, params: { user: { github_token: "ghp_test123" } }
 
     get account_path
     assert_response :success
@@ -24,8 +29,8 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     patch account_path, params: { user: { github_token: "ghp_test123" } }
     assert_redirected_to account_path
 
-    @user.reload
-    assert_equal "ghp_test123", @user.github_token
+    # Check that token is stored in session
+    assert_equal "ghp_test123", session[:github_token]
   end
 
   test "should redirect to sign in when not authenticated" do
@@ -41,7 +46,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should show account when github token is configured" do
-    @user.update!(github_token: "ghp_test123")
+    set_github_token("ghp_test123")
 
     get account_path
     assert_response :success
@@ -49,7 +54,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should display masked token with correct prefix for ghp tokens" do
-    @user.update!(github_token: "ghp_test123456789")
+    set_github_token("ghp_test123456789")
 
     get account_path
     assert_response :success
@@ -57,7 +62,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should display masked token with correct prefix for gho tokens" do
-    @user.update!(github_token: "gho_test123456789")
+    set_github_token("gho_test123456789")
 
     get account_path
     assert_response :success
@@ -65,7 +70,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should display masked token with correct prefix for github_pat tokens" do
-    @user.update!(github_token: "github_pat_test123456789")
+    set_github_token("github_pat_test123456789")
 
     get account_path
     assert_response :success
@@ -81,7 +86,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should destroy all other sessions" do
-    @user.update!(github_token: "ghp_test123")
+    set_github_token("ghp_test123")
 
     # Create additional sessions
     session2 = @user.sessions.create!(user_agent: "Other Browser", ip_address: "192.168.1.2")
@@ -98,7 +103,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should not show logout all sessions button when only one session" do
-    @user.update!(github_token: "ghp_test123")
+    set_github_token("ghp_test123")
 
     get account_path
     assert_response :success
@@ -106,7 +111,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should show logout all sessions button when multiple sessions" do
-    @user.update!(github_token: "ghp_test123")
+    set_github_token("ghp_test123")
     @user.sessions.create!(user_agent: "Other Browser", ip_address: "192.168.1.2")
 
     get account_path

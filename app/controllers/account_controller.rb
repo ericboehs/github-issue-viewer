@@ -3,7 +3,7 @@ class AccountController < ApplicationController
     @user = Current.user
 
     # Redirect to edit if no GitHub token is configured
-    if @user.github_token.blank?
+    if session[:github_token].blank?
       redirect_to edit_account_path
     end
   end
@@ -15,7 +15,9 @@ class AccountController < ApplicationController
   def update
     @user = Current.user
 
-    if @user.update(user_params)
+    # Store GitHub token in session if provided
+    if params[:user][:github_token].present?
+      session[:github_token] = params[:user][:github_token]
       redirect_to account_path, notice: "Account updated successfully."
     else
       render :edit, status: :unprocessable_entity

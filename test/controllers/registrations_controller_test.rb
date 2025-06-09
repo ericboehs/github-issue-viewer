@@ -38,8 +38,11 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
+    # Token should be stored in session, not in user model
+    assert_equal "ghp_secret123", session[:github_token]
+
     user = User.find_by(email_address: "test@example.com")
-    assert_equal "ghp_secret123", user.github_token
+    assert_not_nil user
   end
 
   test "should not create user with invalid attributes" do

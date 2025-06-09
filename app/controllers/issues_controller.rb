@@ -22,7 +22,7 @@ class IssuesController < ApplicationController
 
     if @owner.present? && @repository.present?
       begin
-        @github_service = GithubIssuesService.new(@owner, @repository, token: Current.user.github_token)
+        @github_service = GithubIssuesService.new(@owner, @repository, token: session[:github_token])
 
         # Convert state parameter to uppercase for GraphQL API, handle "all" case
         graphql_state = @state == "all" ? nil : @state.upcase
@@ -60,7 +60,7 @@ class IssuesController < ApplicationController
   private
 
   def ensure_github_token
-    unless Current.user&.github_token.present?
+    unless session[:github_token].present?
       redirect_to account_path, alert: "Please configure your GitHub token to view issues."
     end
   end
