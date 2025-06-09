@@ -8,8 +8,8 @@ class AuthenticationConcernTest < ActionDispatch::IntegrationTest
   test "authenticated? returns true when session exists" do
     post session_path, params: { email_address: @user.email_address, password: "password123" }
     get root_path
-    # The fact that we get a 200 response means authenticated? returned true
-    assert_response :success
+    # Authenticated users are redirected to issues
+    assert_redirected_to issues_path
   end
 
   test "authenticated? returns false when no session" do
@@ -28,18 +28,18 @@ class AuthenticationConcernTest < ActionDispatch::IntegrationTest
     post session_path, params: { email_address: @user.email_address, password: "password123" }
     # Session should be found and user should be authenticated
     get root_path
-    assert_response :success
+    assert_redirected_to issues_path
   end
 
   test "after_authentication_url returns return_to_url when set" do
     # Test that return URL functionality works
     post session_path, params: { email_address: @user.email_address, password: "password123" }
-    assert_redirected_to root_path
+    assert_redirected_to issues_path
   end
 
-  test "after_authentication_url returns root_url when no return_to_url" do
+  test "after_authentication_url returns issues_url when no return_to_url" do
     post session_path, params: { email_address: @user.email_address, password: "password123" }
-    assert_redirected_to root_path
+    assert_redirected_to issues_path
   end
 
   test "start_new_session_for creates session with user agent and ip" do

@@ -57,11 +57,13 @@ class GithubIssuesService
 
   def build_issues_query(limit:, after_cursor:, state:)
     after_clause = after_cursor ? %Q(, after: "#{after_cursor}") : ""
+    states_clause = state ? %Q(, states: [#{state}]) : ""
 
     <<~GRAPHQL
       query {
         repository(owner: "#{@owner}", name: "#{@repository_name}") {
-          issues(first: #{limit}, states: [#{state}], orderBy: {field: CREATED_AT, direction: DESC}#{after_clause}) {
+          issues(first: #{limit}#{states_clause}, orderBy: {field: CREATED_AT, direction: DESC}#{after_clause}) {
+            totalCount
             pageInfo {
               hasNextPage
               endCursor
@@ -178,7 +180,8 @@ class GithubIssuesService
     {
       issues: issues_data[:nodes].map { |issue| format_issue(issue) },
       has_next_page: page_info[:hasNextPage],
-      end_cursor: page_info[:endCursor]
+      end_cursor: page_info[:endCursor],
+      total_count: issues_data[:totalCount]
     }
   end
 

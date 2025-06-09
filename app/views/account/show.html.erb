@@ -1,11 +1,4 @@
 <div class="mx-auto md:w-2/3 w-full">
-  <% if alert = flash[:alert] %>
-    <p class="py-2 px-3 bg-red-50 dark:bg-red-900 mb-5 text-red-500 dark:text-red-300 font-medium rounded-lg inline-block" id="alert"><%= alert %></p>
-  <% end %>
-
-  <% if notice = flash[:notice] %>
-    <p class="py-2 px-3 bg-green-50 dark:bg-green-900 mb-5 text-green-500 dark:text-green-300 font-medium rounded-lg inline-block" id="notice"><%= notice %></p>
-  <% end %>
 
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700">
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -26,13 +19,13 @@
           <div class="bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2 text-gray-900 dark:text-gray-100">
             <% if @user.github_token.present? %>
               <div class="flex items-center justify-between">
-                <span class="font-mono text-sm">ghp_••••••••••••••••••••</span>
+                <span class="font-mono text-sm"><%= @user.github_token.match(/^(github_pat_|[^_]+_)/)[0] %>••••••••••••••••••••</span>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                   Configured
                 </span>
               </div>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Your GitHub token is securely stored and encrypted.
+                Your GitHub token is encrypted using AES-256-GCM.
               </p>
             <% else %>
               <div class="flex items-center justify-between">
@@ -42,7 +35,7 @@
                 </span>
               </div>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Add a GitHub token to access private repositories and increase API rate limits.
+                A GitHub token is required to view issues and repositories.
               </p>
             <% end %>
           </div>
@@ -50,8 +43,19 @@
 
         <div>
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Sessions</h3>
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            <p>Active sessions: <%= @user.sessions.count %></p>
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              <p>Active sessions: <%= @user.sessions.count %></p>
+            </div>
+            <% if @user.sessions.count > 1 %>
+              <%= link_to "Logout All Other Sessions", destroy_all_sessions_account_path,
+                          method: :delete,
+                          data: {
+                            turbo_method: :delete,
+                            turbo_confirm: "Are you sure you want to logout all other sessions? This will sign out all other devices."
+                          },
+                          class: "text-sm bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded-md transition duration-200" %>
+            <% end %>
           </div>
         </div>
       </div>

@@ -15,7 +15,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_difference("Session.count") do
       post session_path, params: { email_address: @user.email_address, password: "password123" }
     end
-    assert_redirected_to root_path
+    assert_redirected_to issues_path
 
     # Verify session was created for the user
     session = @user.sessions.last
@@ -56,6 +56,6 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     # This test is more complex due to session handling in tests
     # For now, just test that login redirects to root by default
     post session_path, params: { email_address: @user.email_address, password: "password123" }
-    assert_redirected_to root_path
+    assert_redirected_to issues_path
   end
 end
