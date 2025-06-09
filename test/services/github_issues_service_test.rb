@@ -224,7 +224,8 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
                   author: nil,
                   labels: { nodes: [] },
                   assignees: { nodes: [] },
-                  milestone: nil
+                  milestone: nil,
+                  comments: { totalCount: 0 }
                 }
               ]
             }
@@ -259,7 +260,8 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
                   author: { login: "test", name: "Test", email: "test@example.com" },
                   labels: { nodes: [] },
                   assignees: { nodes: [] },
-                  milestone: nil
+                  milestone: nil,
+                  comments: { totalCount: 0 }
                 }
               ]
             }
@@ -294,7 +296,8 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
                   author: { login: "test", name: "Test", email: "test@example.com" },
                   labels: { nodes: [] },
                   assignees: { nodes: [] },
-                  milestone: nil
+                  milestone: nil,
+                  comments: { totalCount: 0 }
                 }
               ]
             }
@@ -334,7 +337,8 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
                     title: "Test Milestone",
                     description: "Test Description",
                     dueOn: nil
-                  }
+                  },
+                  comments: { totalCount: 0 }
                 }
               ]
             }
@@ -611,6 +615,9 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         title: "v1.0",
         description: "First release",
         dueOn: "2024-12-31"
+      },
+      comments: {
+        totalCount: 0
       }
     }
   end

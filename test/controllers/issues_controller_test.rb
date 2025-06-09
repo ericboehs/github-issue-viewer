@@ -242,7 +242,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Test Issue 1"
-    assert_select ".prose", count: 2 # Issue body + 1 comment body
+    assert_select ".markdown", count: 2 # Issue body + 1 comment body
   end
 
   test "should redirect to account if no github token for show" do
@@ -296,7 +296,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Test Issue 1"
-    assert_select ".prose", count: 1 # Only issue body
+    assert_select ".markdown", count: 1 # Only issue body
     assert_select "h2", text: /Comments/, count: 0 # No comments section
   end
 
@@ -334,8 +334,8 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
     get issue_url("rails", "rails", 1)
 
     assert_response :success
-    assert_select "span[style*='background-color: #ff0000']", text: "bug"
-    assert_select "span[style*='background-color: #00ff00']", text: "enhancement"
+    assert_select "a[style*='background-color: #ff0000']", text: "bug"
+    assert_select "a[style*='background-color: #00ff00']", text: "enhancement"
   end
 
   test "should display assignees and milestone" do
@@ -381,7 +381,8 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
                   author: { login: "testuser", name: "Test User", email: "test@example.com" },
                   labels: { nodes: [ { name: "bug", color: "ff0000", description: "Something is broken" } ] },
                   assignees: { nodes: [ { login: "assignee1", name: "Assignee One" } ] },
-                  milestone: { title: "v1.0", description: "First release", dueOn: "2024-12-31" }
+                  milestone: { title: "v1.0", description: "First release", dueOn: "2024-12-31" },
+                  comments: { totalCount: 0 }
                 },
                 {
                   id: "gid://github/Issue/2",

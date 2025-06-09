@@ -115,6 +115,9 @@ class GithubIssuesService
                 description
                 dueOn
               }
+              comments {
+                totalCount
+              }
             }
           }
         }
@@ -167,6 +170,7 @@ class GithubIssuesService
             comments(first: 100) {
               nodes {
                 id
+                databaseId
                 body
                 bodyHTML
                 createdAt
@@ -275,7 +279,8 @@ class GithubIssuesService
       author: format_user(issue[:author]),
       labels: issue[:labels][:nodes].map { |label| format_label(label) },
       assignees: issue[:assignees][:nodes].map { |assignee| format_user(assignee) },
-      milestone: issue[:milestone] ? format_milestone(issue[:milestone]) : nil
+      milestone: issue[:milestone] ? format_milestone(issue[:milestone]) : nil,
+      comments_count: issue[:comments] ? issue[:comments][:totalCount] : 0
     }
   end
 
@@ -319,6 +324,7 @@ class GithubIssuesService
   def format_comment(comment)
     {
       id: comment[:id],
+      database_id: comment[:databaseId],
       body: comment[:body],
       body_html: comment[:bodyHTML],
       created_at: Time.parse(comment[:createdAt]),
