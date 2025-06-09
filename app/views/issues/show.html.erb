@@ -1,0 +1,205 @@
+<% content_for :title, "Issue ##{@issue_number}" %>
+
+<div class="space-y-4">
+  <% if @error.present? %>
+    <!-- Error State -->
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+      <div class="flex items-center">
+        <svg class="w-6 h-6 text-red-600 dark:text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <h3 class="text-lg font-medium text-red-800 dark:text-red-200">Error</h3>
+          <p class="text-red-600 dark:text-red-300 mt-1"><%= @error %></p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <%= link_to "← Back to Issues", issues_path, class: "text-red-600 dark:text-red-300 hover:text-red-800 dark:hover:text-red-100 underline" %>
+      </div>
+    </div>
+  <% elsif @issue.present? %>
+    <!-- Back to Issues Link -->
+    <div class="pb-2">
+      <%= link_to "← Back to Issues", issues_path(owner: @owner, repository: @repository), 
+                  class: "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm font-medium" %>
+    </div>
+
+    <!-- Issue Header -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+      <div class="p-4 sm:p-6">
+        <!-- Repository and Issue Number -->
+        <div class="mb-4">
+          <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <span class="font-medium"><%= @owner %>/<%= @repository %></span>
+            <span>#<%= @issue[:number] %></span>
+          </div>
+          
+          <!-- Issue Title -->
+          <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            <%= @issue[:title] %>
+          </h1>
+        </div>
+
+        <!-- Issue Metadata -->
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <!-- Issue State -->
+          <div class="flex items-center space-x-1">
+            <% if @issue[:state] == "open" %>
+              <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"/>
+              </svg>
+              <span class="text-green-700 dark:text-green-400 font-medium capitalize"><%= @issue[:state] %></span>
+            <% else %>
+              <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.28 6.78a.75.75 0 00-1.06-1.06L7.25 8.69 5.78 7.22a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.06 0l3.5-3.5z"/>
+                <path d="M16 8A8 8 0 110 8a8 8 0 0116 0zm-8-6.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13z"/>
+              </svg>
+              <span class="text-purple-700 dark:text-purple-400 font-medium capitalize"><%= @issue[:state] %></span>
+            <% end %>
+          </div>
+
+          <!-- Author and dates -->
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <% if @issue[:author] %>
+              <div class="flex items-center space-x-1">
+                <% if @issue[:author][:avatar_url] %>
+                  <img src="<%= @issue[:author][:avatar_url] %>" alt="<%= @issue[:author][:login] %>" class="w-5 h-5 rounded-full">
+                <% end %>
+                <span>opened by <strong><%= @issue[:author][:login] %></strong></span>
+              </div>
+            <% end %>
+            <div class="mt-1 text-xs">
+              <span>Created <%= time_ago_in_words(@issue[:created_at]) %> ago</span>
+              <% if @issue[:updated_at] != @issue[:created_at] %>
+                <span class="ml-2">• Updated <%= time_ago_in_words(@issue[:updated_at]) %> ago</span>
+              <% end %>
+              <% if @issue[:closed_at] %>
+                <span class="ml-2">• Closed <%= time_ago_in_words(@issue[:closed_at]) %> ago</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Labels -->
+        <% if @issue[:labels].any? %>
+          <div class="flex flex-wrap gap-1 mb-4">
+            <% @issue[:labels].each do |label| %>
+              <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                    style="background-color: #<%= label[:color] %>; color: <%= label[:color].to_i(16) > 0x7FFFFF ? '#000' : '#fff' %>;">
+                <%= label[:name] %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- Assignees and Milestone -->
+        <% if @issue[:assignees].any? || @issue[:milestone] %>
+          <div class="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <% if @issue[:assignees].any? %>
+              <div class="flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span>Assigned to:</span>
+                <div class="flex flex-wrap gap-1">
+                  <% @issue[:assignees].each do |assignee| %>
+                    <div class="flex items-center space-x-1">
+                      <% if assignee[:avatar_url] %>
+                        <img src="<%= assignee[:avatar_url] %>" alt="<%= assignee[:login] %>" class="w-4 h-4 rounded-full">
+                      <% end %>
+                      <span class="font-medium"><%= assignee[:login] %></span>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
+            <% if @issue[:milestone] %>
+              <div class="flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+                <span>Milestone: <strong><%= @issue[:milestone][:title] %></strong></span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Issue Body -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+      <div class="p-4 sm:p-6">
+        <% if @issue[:body].present? %>
+          <div class="prose prose-sm max-w-none dark:prose-invert">
+            <%= markdown_to_html(@issue[:body]) %>
+          </div>
+        <% else %>
+          <p class="text-gray-500 dark:text-gray-400 italic">No description provided.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Comments Section -->
+    <% if @comments.any? %>
+      <div class="space-y-4">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          Comments (<%= pluralize(@comments.length, 'comment') %>)
+        </h2>
+        
+        <% @comments.each do |comment| %>
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+            <!-- Comment Header -->
+            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600 rounded-t-lg">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <% if comment[:author]&.[](:avatar_url) %>
+                    <img src="<%= comment[:author][:avatar_url] %>" alt="<%= comment[:author][:login] %>" class="w-6 h-6 rounded-full">
+                  <% end %>
+                  <div class="text-sm">
+                    <% if comment[:author] %>
+                      <span class="font-medium text-gray-900 dark:text-white"><%= comment[:author][:login] %></span>
+                    <% else %>
+                      <span class="font-medium text-gray-500 dark:text-gray-400">Unknown user</span>
+                    <% end %>
+                    <span class="text-gray-500 dark:text-gray-400">
+                      commented <%= time_ago_in_words(comment[:created_at]) %> ago
+                    </span>
+                  </div>
+                </div>
+                
+                <% if comment[:updated_at] != comment[:created_at] %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    edited <%= time_ago_in_words(comment[:updated_at]) %> ago
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            
+            <!-- Comment Body -->
+            <div class="p-4 sm:p-6">
+              <% if comment[:body].present? %>
+                <div class="prose prose-sm max-w-none dark:prose-invert">
+                  <%= markdown_to_html(comment[:body]) %>
+                </div>
+              <% else %>
+                <p class="text-gray-500 dark:text-gray-400 italic">No comment text.</p>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- External Link -->
+    <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+      <%= link_to @issue[:url], target: "_blank", rel: "noopener",
+                  class: "inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm font-medium" do %>
+        View on GitHub
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+        </svg>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -18,6 +18,7 @@ class GithubIssuesService
   class RateLimitError < GithubApiError; end
   class AuthenticationError < GithubApiError; end
   class RepositoryNotFoundError < GithubApiError; end
+  class IssueNotFoundError < GithubApiError; end
 
   def initialize(owner, repository_name, token: nil)
     @owner = owner
@@ -51,6 +52,17 @@ class GithubIssuesService
     end
 
     all_issues
+  end
+
+  def fetch_issue_with_comments(issue_number)
+    query = build_issue_query(issue_number)
+
+    response = execute_graphql_query(query)
+    parse_issue_response(response, issue_number)
+  rescue Net::ReadTimeout, Net::OpenTimeout => e
+    raise GithubApiError, "Network timeout: #{e.message}"
+  rescue JSON::ParserError => e
+    raise GithubApiError, "Invalid JSON response: #{e.message}"
   end
 
   private
@@ -102,6 +114,70 @@ class GithubIssuesService
                 title
                 description
                 dueOn
+              }
+            }
+          }
+        }
+      }
+    GRAPHQL
+  end
+
+  def build_issue_query(issue_number)
+    <<~GRAPHQL
+      query {
+        repository(owner: "#{@owner}", name: "#{@repository_name}") {
+          issue(number: #{issue_number}) {
+            id
+            number
+            title
+            body
+            bodyHTML
+            state
+            createdAt
+            updatedAt
+            closedAt
+            url
+            author {
+              login
+              ... on User {
+                name
+                email
+                avatarUrl
+              }
+            }
+            labels(first: 20) {
+              nodes {
+                name
+                color
+                description
+              }
+            }
+            assignees(first: 10) {
+              nodes {
+                login
+                name
+                avatarUrl
+              }
+            }
+            milestone {
+              title
+              description
+              dueOn
+            }
+            comments(first: 100) {
+              nodes {
+                id
+                body
+                bodyHTML
+                createdAt
+                updatedAt
+                author {
+                  login
+                  ... on User {
+                    name
+                    avatarUrl
+                  }
+                }
               }
             }
           }
@@ -203,6 +279,54 @@ class GithubIssuesService
     }
   end
 
+  def parse_issue_response(response, issue_number)
+    if response[:errors]
+      error_messages = response[:errors].map { |e| e[:message] }.join(", ")
+      raise GithubApiError, "GraphQL errors: #{error_messages}"
+    end
+
+    repository_data = response.dig(:data, :repository)
+    raise RepositoryNotFoundError, "Repository #{@owner}/#{@repository_name} not found" if repository_data.nil?
+
+    issue_data = repository_data[:issue]
+    raise IssueNotFoundError, "Issue ##{issue_number} not found in #{@owner}/#{@repository_name}" if issue_data.nil?
+
+    {
+      issue: format_issue_with_html(issue_data),
+      comments: issue_data[:comments][:nodes].map { |comment| format_comment(comment) }
+    }
+  end
+
+  def format_issue_with_html(issue)
+    {
+      id: issue[:id],
+      number: issue[:number],
+      title: issue[:title],
+      body: issue[:body],
+      body_html: issue[:bodyHTML],
+      state: issue[:state].downcase,
+      created_at: Time.parse(issue[:createdAt]),
+      updated_at: Time.parse(issue[:updatedAt]),
+      closed_at: issue[:closedAt] ? Time.parse(issue[:closedAt]) : nil,
+      url: issue[:url],
+      author: format_user_with_avatar(issue[:author]),
+      labels: issue[:labels][:nodes].map { |label| format_label(label) },
+      assignees: issue[:assignees][:nodes].map { |assignee| format_user_with_avatar(assignee) },
+      milestone: issue[:milestone] ? format_milestone(issue[:milestone]) : nil
+    }
+  end
+
+  def format_comment(comment)
+    {
+      id: comment[:id],
+      body: comment[:body],
+      body_html: comment[:bodyHTML],
+      created_at: Time.parse(comment[:createdAt]),
+      updated_at: Time.parse(comment[:updatedAt]),
+      author: format_user_with_avatar(comment[:author])
+    }
+  end
+
   def format_user(user)
     return nil if user.nil?
 
@@ -210,6 +334,17 @@ class GithubIssuesService
       login: user[:login],
       name: user[:name],
       email: user[:email]
+    }
+  end
+
+  def format_user_with_avatar(user)
+    return nil if user.nil?
+
+    {
+      login: user[:login],
+      name: user[:name],
+      email: user[:email],
+      avatar_url: user[:avatarUrl]
     }
   end
 

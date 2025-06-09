@@ -57,6 +57,36 @@ class IssuesController < ApplicationController
     end
   end
 
+  def show
+    @owner = params[:owner]
+    @repository = params[:repository]
+    @issue_number = params[:number]
+
+    if @owner.present? && @repository.present? && @issue_number.present?
+      begin
+        @github_service = GithubIssuesService.new(@owner, @repository, token: Current.user.github_token)
+        result = @github_service.fetch_issue_with_comments(@issue_number)
+        @issue = result[:issue]
+        @comments = result[:comments]
+
+      rescue GithubIssuesService::AuthenticationError => e
+        @error = "GitHub authentication failed. Please #{view_context.link_to('check your token', edit_account_path, class: 'underline hover:text-red-800 dark:hover:text-red-300', data: { turbo: false })}.".html_safe
+      rescue GithubIssuesService::RepositoryNotFoundError => e
+        @error = "Repository #{@owner}/#{@repository} not found or you don't have access to it."
+      rescue GithubIssuesService::IssueNotFoundError => e
+        @error = "Issue ##{@issue_number} not found in #{@owner}/#{@repository}."
+      rescue GithubIssuesService::RateLimitError => e
+        @error = "GitHub API rate limit exceeded. Please try again later."
+      rescue GithubIssuesService::GithubApiError => e
+        @error = "GitHub API error: #{e.message}"
+      rescue => e
+        @error = "An unexpected error occurred: #{e.message}"
+      end
+    else
+      @error = "Invalid issue parameters."
+    end
+  end
+
   private
 
   def ensure_github_token

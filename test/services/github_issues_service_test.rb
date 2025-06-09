@@ -348,6 +348,118 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
     assert_nil issue[:milestone][:due_on]
   end
 
+  # Tests for fetch_issue_with_comments
+  test "should fetch issue with comments successfully" do
+    stub_successful_issue_detail_response
+
+    result = @service.fetch_issue_with_comments(1)
+
+    assert_not_nil result[:issue]
+    assert_not_nil result[:comments]
+
+    issue = result[:issue]
+    assert_equal "gid://github/Issue/1", issue[:id]
+    assert_equal 1, issue[:number]
+    assert_equal "Test Issue 1", issue[:title]
+    assert_equal "# This is a test issue", issue[:body]
+    assert_equal "<h1>This is a test issue</h1>", issue[:body_html]
+    assert_equal "open", issue[:state]
+    assert_instance_of Time, issue[:created_at]
+    assert_not_nil issue[:author][:avatar_url]
+
+    comments = result[:comments]
+    assert_equal 1, comments.length
+    comment = comments.first
+    assert_equal "gid://github/IssueComment/1", comment[:id]
+    assert_equal "This is a test comment.", comment[:body]
+    assert_equal "<p>This is a test comment.</p>", comment[:body_html]
+    assert_instance_of Time, comment[:created_at]
+    assert_not_nil comment[:author][:avatar_url]
+  end
+
+  test "should handle issue not found error" do
+    stub_issue_not_found_response
+
+    error = assert_raises(GithubIssuesService::IssueNotFoundError) do
+      @service.fetch_issue_with_comments(999)
+    end
+    assert_match(/Issue #999 not found in rails\/rails/, error.message)
+  end
+
+  test "should handle repository not found for issue detail" do
+    stub_repository_not_found_response
+
+    error = assert_raises(GithubIssuesService::RepositoryNotFoundError) do
+      @service.fetch_issue_with_comments(1)
+    end
+    assert_match(/Repository rails\/rails not found/, error.message)
+  end
+
+  test "should handle authentication error for issue detail" do
+    stub_authentication_error_response
+
+    error = assert_raises(GithubIssuesService::AuthenticationError) do
+      @service.fetch_issue_with_comments(1)
+    end
+    assert_match(/Invalid or missing GitHub token/, error.message)
+  end
+
+  test "should handle GraphQL errors for issue detail" do
+    stub_graphql_error_response
+
+    error = assert_raises(GithubIssuesService::GithubApiError) do
+      @service.fetch_issue_with_comments(1)
+    end
+    assert_match(/GraphQL errors/, error.message)
+  end
+
+  test "should handle network timeout for issue detail" do
+    stub_timeout_error
+
+    error = assert_raises(GithubIssuesService::GithubApiError) do
+      @service.fetch_issue_with_comments(1)
+    end
+    assert_match(/Network timeout/, error.message)
+  end
+
+  test "should handle issue with no comments" do
+    stub_issue_without_comments_response
+
+    result = @service.fetch_issue_with_comments(1)
+
+    assert_not_nil result[:issue]
+    assert_not_nil result[:comments]
+    assert_equal 0, result[:comments].length
+  end
+
+  test "should handle issue with nil author in comments" do
+    stub_issue_with_nil_comment_author_response
+
+    result = @service.fetch_issue_with_comments(1)
+
+    comment = result[:comments].first
+    assert_nil comment[:author]
+  end
+
+  test "should format user with avatar correctly" do
+    stub_successful_issue_detail_response
+
+    result = @service.fetch_issue_with_comments(1)
+
+    issue = result[:issue]
+    assert_not_nil issue[:author]
+    assert_equal "testuser", issue[:author][:login]
+    assert_equal "Test User", issue[:author][:name]
+    assert_equal "test@example.com", issue[:author][:email]
+    assert_equal "https://github.com/testuser.png", issue[:author][:avatar_url]
+
+    comment = result[:comments].first
+    assert_not_nil comment[:author]
+    assert_equal "commenter", comment[:author][:login]
+    assert_equal "Test Commenter", comment[:author][:name]
+    assert_equal "https://github.com/commenter.png", comment[:author][:avatar_url]
+  end
+
   private
 
   def stub_successful_graphql_response
@@ -501,5 +613,146 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         dueOn: "2024-12-31"
       }
     }
+  end
+
+  def stub_successful_issue_detail_response
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issue: {
+              id: "gid://github/Issue/1",
+              number: 1,
+              title: "Test Issue 1",
+              body: "# This is a test issue",
+              bodyHTML: "<h1>This is a test issue</h1>",
+              state: "OPEN",
+              createdAt: "2024-01-01T00:00:00Z",
+              updatedAt: "2024-01-01T00:00:00Z",
+              closedAt: nil,
+              url: "https://github.com/rails/rails/issues/1",
+              author: {
+                login: "testuser",
+                name: "Test User",
+                email: "test@example.com",
+                avatarUrl: "https://github.com/testuser.png"
+              },
+              labels: {
+                nodes: [
+                  { name: "bug", color: "ff0000", description: "Something is broken" }
+                ]
+              },
+              assignees: {
+                nodes: [
+                  { login: "assignee1", name: "Assignee One", avatarUrl: "https://github.com/assignee1.png" }
+                ]
+              },
+              milestone: { title: "v1.0", description: "First release", dueOn: "2024-12-31" },
+              comments: {
+                nodes: [
+                  {
+                    id: "gid://github/IssueComment/1",
+                    body: "This is a test comment.",
+                    bodyHTML: "<p>This is a test comment.</p>",
+                    createdAt: "2024-01-02T00:00:00Z",
+                    updatedAt: "2024-01-02T00:00:00Z",
+                    author: {
+                      login: "commenter",
+                      name: "Test Commenter",
+                      avatarUrl: "https://github.com/commenter.png"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }.to_json)
+  end
+
+  def stub_issue_not_found_response
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issue: nil
+          }
+        }
+      }.to_json)
+  end
+
+  def stub_issue_without_comments_response
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issue: {
+              id: "gid://github/Issue/1",
+              number: 1,
+              title: "Test Issue 1",
+              body: "# This is a test issue",
+              bodyHTML: "<h1>This is a test issue</h1>",
+              state: "OPEN",
+              createdAt: "2024-01-01T00:00:00Z",
+              updatedAt: "2024-01-01T00:00:00Z",
+              closedAt: nil,
+              url: "https://github.com/rails/rails/issues/1",
+              author: {
+                login: "testuser",
+                name: "Test User",
+                email: "test@example.com",
+                avatarUrl: "https://github.com/testuser.png"
+              },
+              labels: { nodes: [] },
+              assignees: { nodes: [] },
+              milestone: nil,
+              comments: { nodes: [] }
+            }
+          }
+        }
+      }.to_json)
+  end
+
+  def stub_issue_with_nil_comment_author_response
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issue: {
+              id: "gid://github/Issue/1",
+              number: 1,
+              title: "Test Issue 1",
+              body: "# This is a test issue",
+              bodyHTML: "<h1>This is a test issue</h1>",
+              state: "OPEN",
+              createdAt: "2024-01-01T00:00:00Z",
+              updatedAt: "2024-01-01T00:00:00Z",
+              closedAt: nil,
+              url: "https://github.com/rails/rails/issues/1",
+              author: {
+                login: "testuser",
+                name: "Test User",
+                email: "test@example.com",
+                avatarUrl: "https://github.com/testuser.png"
+              },
+              labels: { nodes: [] },
+              assignees: { nodes: [] },
+              milestone: nil,
+              comments: {
+                nodes: [
+                  {
+                    id: "gid://github/IssueComment/1",
+                    body: "This is a comment with no author.",
+                    bodyHTML: "<p>This is a comment with no author.</p>",
+                    createdAt: "2024-01-02T00:00:00Z",
+                    updatedAt: "2024-01-02T00:00:00Z",
+                    author: nil
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }.to_json)
   end
 end
