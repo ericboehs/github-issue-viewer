@@ -7,20 +7,20 @@
       <div class="flex-1 min-w-48">
         <%= form.label :owner, "Repository Owner", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
         <%= form.text_field :owner, value: @owner, placeholder: "e.g., rails",
-                            class: "block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm sm:leading-6" %>
+                            class: "block w-full rounded-md border-0 py-2.5 px-3.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm sm:leading-6" %>
       </div>
 
       <div class="flex-1 min-w-48">
         <%= form.label :repository, "Repository Name", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
         <%= form.text_field :repository, value: @repository, placeholder: "e.g., rails",
-                            class: "block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm sm:leading-6" %>
+                            class: "block w-full rounded-md border-0 py-2.5 px-3.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm sm:leading-6" %>
       </div>
 
       <div class="min-w-32">
         <%= form.label :state, "State", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
         <%= form.select :state, [["Open", "open"], ["Closed", "closed"], ["All", "all"]],
                         { selected: @state },
-                        { class: "block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm sm:leading-6" } %>
+                        { class: "block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm sm:leading-6" } %>
       </div>
 
       <div>
@@ -65,7 +65,7 @@
               <%= @owner %>/<%= @repository %>
             </h2>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-              <%= pluralize(@issues.length, 'issue') %>
+              <%= @total_count ? pluralize(@total_count, 'issue') : pluralize(@issues.length, 'issue') %>
             </span>
           </div>
 
@@ -78,17 +78,17 @@
             <label class="text-sm text-gray-700 dark:text-gray-300">Sort:</label>
             <%= form.select :sort, [["Created", "created"], ["Updated", "updated"], ["Title", "title"]],
                             { selected: @sort },
-                            { class: "rounded-md border-0 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm", onchange: "this.form.submit();" } %>
+                            { class: "rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm", onchange: "this.form.submit();" } %>
 
             <%= form.select :direction, [["Newest first", "desc"], ["Oldest first", "asc"]],
                             { selected: @direction },
-                            { class: "rounded-md border-0 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm", onchange: "this.form.submit();" } %>
+                            { class: "rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:bg-gray-700 sm:text-sm", onchange: "this.form.submit();" } %>
           <% end %>
         </div>
       </div>
 
       <!-- Issues List -->
-      <div class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+      <div class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
         <% @issues.each do |issue| %>
           <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
             <div class="flex items-start space-x-3">
@@ -162,7 +162,7 @@
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                         </svg>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-24">
                           <%= issue[:milestone][:title] %>
                         </span>
                       </div>
@@ -176,15 +176,66 @@
       </div>
 
         <!-- Pagination -->
-        <% if @has_next_page %>
-          <div class="text-center">
-            <%= link_to issues_path(owner: @owner, repository: @repository, state: @state, sort: @sort, direction: @direction, after_cursor: @end_cursor),
-                        class: "inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" do %>
-              Load More Issues
-              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            <% end %>
+        <% if @after_cursor.present? || @has_next_page %>
+          <div class="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <!-- Mobile pagination -->
+              <% if @after_cursor.present? %>
+                <%= link_to issues_path(owner: @owner, repository: @repository, state: @state, sort: @sort, direction: @direction, page: @page - 1),
+                            class: "relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" do %>
+                  Previous
+                <% end %>
+              <% end %>
+              <% if @has_next_page %>
+                <%= link_to issues_path(owner: @owner, repository: @repository, state: @state, sort: @sort, direction: @direction, after_cursor: @end_cursor, page: @page + 1),
+                            class: "ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" do %>
+                  Next
+                <% end %>
+              <% end %>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  <% if @total_count %>
+                    Showing <span class="font-medium"><%= (@page - 1) * @per_page + 1 %></span> to <span class="font-medium"><%= (@page - 1) * @per_page + @issues.length %></span> of <span class="font-medium"><%= @total_count %></span> results
+                  <% else %>
+                    Showing <span class="font-medium"><%= (@page - 1) * @per_page + 1 %></span> to <span class="font-medium"><%= (@page - 1) * @per_page + @issues.length %></span> results
+                  <% end %>
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <% if @after_cursor.present? %>
+                    <%= link_to issues_path(owner: @owner, repository: @repository, state: @state, sort: @sort, direction: @direction, page: @page - 1),
+                                class: "relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700" do %>
+                      <span class="sr-only">Previous</span>
+                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    <% end %>
+                  <% end %>
+
+                  <!-- Current page indicator with enhanced info -->
+                  <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-blue-50 dark:bg-blue-900 text-sm font-medium text-blue-600 dark:text-blue-200">
+                    <% if @total_pages %>
+                      <%= @page %> of <%= @total_pages %>
+                    <% else %>
+                      <%= @page %>
+                    <% end %>
+                  </span>
+
+                  <% if @has_next_page %>
+                    <%= link_to issues_path(owner: @owner, repository: @repository, state: @state, sort: @sort, direction: @direction, after_cursor: @end_cursor, page: @page + 1),
+                                class: "relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700" do %>
+                      <span class="sr-only">Next</span>
+                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    <% end %>
+                  <% end %>
+                </nav>
+              </div>
+            </div>
           </div>
         <% end %>
       </div>

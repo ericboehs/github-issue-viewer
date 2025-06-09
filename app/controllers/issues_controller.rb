@@ -8,6 +8,17 @@ class IssuesController < ApplicationController
     @sort = params[:sort] || "created"
     @direction = params[:direction] || "desc"
     @per_page = (params[:per_page] || 20).to_i.clamp(1, 100)
+    @after_cursor = params[:after_cursor]
+    @page = params[:page]&.to_i || 1
+
+    # Check for last searched repository in cookie if no params provided
+    if @owner.blank? && @repository.blank? && cookies[:last_repo].present?
+      last_repo = JSON.parse(cookies[:last_repo]) rescue {}
+      if last_repo["owner"].present? && last_repo["repository"].present?
+        redirect_to issues_path(owner: last_repo["owner"], repository: last_repo["repository"], state: @state)
+        return
+      end
+    end
 
     if @owner.present? && @repository.present?
       begin
@@ -16,13 +27,21 @@ class IssuesController < ApplicationController
         # Convert state parameter to uppercase for GraphQL API
         graphql_state = @state.upcase
 
-        result = @github_service.fetch_issues(limit: @per_page, state: graphql_state)
+        result = @github_service.fetch_issues(limit: @per_page, after_cursor: @after_cursor, state: graphql_state)
         @issues = result[:issues]
         @has_next_page = result[:has_next_page]
         @end_cursor = result[:end_cursor]
+        @total_count = result[:total_count]
+        @total_pages = @total_count ? (@total_count.to_f / @per_page).ceil : nil
 
         # Apply client-side sorting if needed (since GraphQL API has limited sorting options)
         @issues = sort_issues(@issues) unless @sort == "created" && @direction == "desc"
+
+        # Save successful search to cookie
+        cookies[:last_repo] = {
+          value: { owner: @owner, repository: @repository }.to_json,
+          expires: 30.days.from_now
+        }
 
       rescue GithubIssuesService::AuthenticationError => e
         @error = "GitHub authentication failed. Please check your token."

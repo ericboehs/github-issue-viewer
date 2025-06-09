@@ -43,6 +43,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
     assert_equal 2, result[:issues].length
     assert result[:has_next_page]
     assert_equal "cursor123", result[:end_cursor]
+    assert_equal 10, result[:total_count]
 
     issue = result[:issues].first
     assert_equal "gid://github/Issue/1", issue[:id]
@@ -207,6 +208,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         data: {
           repository: {
             issues: {
+              totalCount: 1,
               pageInfo: { hasNextPage: false, endCursor: nil },
               nodes: [
                 {
@@ -241,6 +243,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         data: {
           repository: {
             issues: {
+              totalCount: 1,
               pageInfo: { hasNextPage: false, endCursor: nil },
               nodes: [
                 {
@@ -275,6 +278,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         data: {
           repository: {
             issues: {
+              totalCount: 1,
               pageInfo: { hasNextPage: false, endCursor: nil },
               nodes: [
                 {
@@ -310,6 +314,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         data: {
           repository: {
             issues: {
+              totalCount: 1,
               pageInfo: { hasNextPage: false, endCursor: nil },
               nodes: [
                 {
@@ -390,6 +395,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         data: {
           repository: {
             issues: {
+              totalCount: 3,
               pageInfo: { hasNextPage: true, endCursor: "cursor1" },
               nodes: [ sample_issue(1) ]
             }
@@ -404,6 +410,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         data: {
           repository: {
             issues: {
+              totalCount: 3,
               pageInfo: { hasNextPage: true, endCursor: "cursor2" },
               nodes: [ sample_issue(2) ]
             }
@@ -418,6 +425,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
         data: {
           repository: {
             issues: {
+              totalCount: 3,
               pageInfo: { hasNextPage: false, endCursor: "cursor3" },
               nodes: [ sample_issue(3) ]
             }
@@ -431,6 +439,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
       data: {
         repository: {
           issues: {
+            totalCount: 10,
             pageInfo: { hasNextPage: true, endCursor: "cursor123" },
             nodes: [ sample_issue(1), sample_issue(2) ]
           }
@@ -444,6 +453,7 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
       data: {
         repository: {
           issues: {
+            totalCount: 0,
             pageInfo: { hasNextPage: false, endCursor: nil },
             nodes: []
           }

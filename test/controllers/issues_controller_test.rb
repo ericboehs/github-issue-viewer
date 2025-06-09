@@ -164,12 +164,74 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should redirect to last repo from cookie when no params provided" do
+    stub_successful_github_response
+
+    # Set up cookie with last repo
+    cookies[:last_repo] = { owner: "rails", repository: "rails" }.to_json
+
+    get issues_url
+
+    assert_redirected_to issues_path(owner: "rails", repository: "rails", state: "open")
+  end
+
+  test "should handle malformed cookie gracefully" do
+    # Set up malformed cookie
+    cookies[:last_repo] = "invalid json{"
+
+    get issues_url
+
+    assert_response :success
+    assert_select ".text-center h3", "No Repository Selected"
+  end
+
+  test "should handle cookie with missing fields" do
+    # Set up cookie with incomplete data
+    cookies[:last_repo] = { owner: "rails" }.to_json
+
+    get issues_url
+
+    assert_response :success
+    assert_select ".text-center h3", "No Repository Selected"
+  end
+
   test "should handle default sorting with desc direction" do
     stub_successful_github_response
 
     get issues_url, params: { owner: "rails", repository: "rails", sort: "created", direction: "desc" }
 
     assert_response :success
+  end
+
+  test "should calculate total pages correctly" do
+    stub_successful_github_response
+
+    get issues_url, params: { owner: "rails", repository: "rails", per_page: "3" }
+
+    assert_response :success
+    # With totalCount of 2 and per_page of 3, should have 1 total page
+    # Verify total count is shown and used
+    assert_select ".bg-gray-100", text: /2 issues/
+  end
+
+  test "should handle nil total count for total pages" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issues: {
+              pageInfo: { hasNextPage: false, endCursor: nil },
+              nodes: []
+            }
+          }
+        }
+      }.to_json)
+
+    get issues_url, params: { owner: "rails", repository: "rails" }
+
+    assert_response :success
+    # Should show no issues found when empty
+    assert_select ".text-center h3", "No Issues Found"
   end
 
   private
@@ -188,6 +250,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
         data: {
           repository: {
             issues: {
+              totalCount: 2,
               pageInfo: { hasNextPage: false, endCursor: nil },
               nodes: [
                 {
@@ -253,6 +316,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
         data: {
           repository: {
             issues: {
+              totalCount: 0,
               pageInfo: { hasNextPage: false, endCursor: nil },
               nodes: []
             }
@@ -266,6 +330,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
       data: {
         repository: {
           issues: {
+            totalCount: 0,
             pageInfo: { hasNextPage: false, endCursor: nil },
             nodes: []
           }

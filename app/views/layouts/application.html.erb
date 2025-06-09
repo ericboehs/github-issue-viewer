@@ -47,7 +47,6 @@
           <!-- Desktop menu -->
           <div class="hidden md:flex md:items-center md:space-x-4">
             <% if Current.user %>
-              <%= link_to "Issues", issues_path, class: "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium" %>
               <%= link_to "Account", account_path, class: "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium" %>
               <%= link_to "Sign out", session_path, method: :delete, data: { turbo_method: :delete },
                           class: "bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium" %>
@@ -62,7 +61,6 @@
         <div class="mobile-menu hidden md:hidden">
           <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <% if Current.user %>
-              <%= link_to "Issues", issues_path, class: "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium" %>
               <%= link_to "Account", account_path, class: "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium" %>
               <%= link_to "Sign out", session_path, method: :delete, data: { turbo_method: :delete },
                           class: "bg-red-600 hover:bg-red-700 text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left" %>

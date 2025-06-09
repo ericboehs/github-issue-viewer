@@ -31,6 +31,39 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to issues_path
   end
 
+  test "should redirect to specific repo from cookie when authenticated" do
+    user = users(:one)
+    post session_path, params: { email_address: user.email_address, password: "password" }
+
+    # Set up cookie with last repo
+    cookies[:last_repo] = { owner: "rails", repository: "rails" }.to_json
+
+    get root_path
+    assert_redirected_to issues_path(owner: "rails", repository: "rails")
+  end
+
+  test "should handle malformed cookie gracefully when authenticated" do
+    user = users(:one)
+    post session_path, params: { email_address: user.email_address, password: "password" }
+
+    # Set up malformed cookie
+    cookies[:last_repo] = "invalid json{"
+
+    get root_path
+    assert_redirected_to issues_path
+  end
+
+  test "should handle incomplete cookie data when authenticated" do
+    user = users(:one)
+    post session_path, params: { email_address: user.email_address, password: "password" }
+
+    # Set up cookie with incomplete data
+    cookies[:last_repo] = { owner: "rails" }.to_json
+
+    get root_path
+    assert_redirected_to issues_path
+  end
+
   test "should show user email and sign out when authenticated" do
     user = User.create!(email_address: "test@example.com", password: "password123")
     post session_path, params: { email_address: user.email_address, password: "password123" }
