@@ -1,0 +1,64 @@
+<div class="mx-auto md:w-2/3 w-full">
+  <% if alert = flash[:alert] %>
+    <p class="py-2 px-3 bg-red-50 dark:bg-red-900 mb-5 text-red-500 dark:text-red-300 font-medium rounded-lg inline-block" id="alert"><%= alert %></p>
+  <% end %>
+
+  <% if notice = flash[:notice] %>
+    <p class="py-2 px-3 bg-green-50 dark:bg-green-900 mb-5 text-green-500 dark:text-green-300 font-medium rounded-lg inline-block" id="notice"><%= notice %></p>
+  <% end %>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Account</h1>
+    </div>
+
+    <%= form_with model: @user, url: account_path, method: :patch, class: "contents" do |form| %>
+      <div class="p-6">
+        <% if @user.errors.any? %>
+          <div class="py-2 px-3 bg-red-50 dark:bg-red-900 mb-5 text-red-500 dark:text-red-300 font-medium rounded-lg inline-block">
+            <h2 class="font-bold mb-2"><%= pluralize(@user.errors.count, "error") %> prohibited this account from being updated:</h2>
+            <ul class="list-disc list-inside">
+              <% @user.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2 text-gray-900 dark:text-gray-100">
+              <%= @user.email_address %>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Email address cannot be changed.</p>
+          </div>
+
+          <div>
+            <%= form.label :github_token, "GitHub Token", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+            <%= form.text_field :github_token,
+                placeholder: "ghp_xxxxxxxxxxxxxxxxxxxx",
+                autocomplete: "off",
+                class: "block shadow-sm rounded-md border border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <strong>How to get a GitHub token:</strong><br>
+              1. Go to GitHub → Settings → Developer settings → Personal access tokens<br>
+              2. Generate a new token (classic) with appropriate permissions<br>
+              3. Copy and paste the token here. It will be securely encrypted.
+            </p>
+            <% if @user.github_token.present? %>
+              <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
+                ⚠️ Entering a new token will replace your existing token.
+              </p>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="mt-8 flex gap-3">
+          <%= form.submit "Update Account", class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200" %>
+          <%= link_to "Cancel", account_path, class: "border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 font-semibold py-2 px-4 rounded-md transition duration-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

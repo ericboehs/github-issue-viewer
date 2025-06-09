@@ -2,6 +2,7 @@ module Authentication
   extend ActiveSupport::Concern
 
   included do
+    before_action :set_current_session
     before_action :require_authentication
     helper_method :authenticated?
   end
@@ -13,12 +14,16 @@ module Authentication
   end
 
   private
+    def set_current_session
+      Current.session ||= find_session_by_cookie
+    end
+
     def authenticated?
-      resume_session
+      Current.session.present?
     end
 
     def require_authentication
-      resume_session || request_authentication
+      authenticated? || request_authentication
     end
 
     def resume_session

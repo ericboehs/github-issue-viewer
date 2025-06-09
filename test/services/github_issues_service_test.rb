@@ -140,6 +140,209 @@ class GithubIssuesServiceTest < ActiveSupport::TestCase
     assert_requested request_stub
   end
 
+  test "should handle 404 response code" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 404, body: { message: "Not Found" }.to_json)
+
+    error = assert_raises(GithubIssuesService::RepositoryNotFoundError) do
+      @service.fetch_issues
+    end
+    assert_match(/Repository rails\/rails not found/, error.message)
+    assert_equal "404", error.response_code
+  end
+
+  test "should handle 422 unprocessable entity" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 422, body: { message: "Unprocessable Entity" }.to_json)
+
+    error = assert_raises(GithubIssuesService::GithubApiError) do
+      @service.fetch_issues
+    end
+    assert_match(/Unprocessable entity - check your GraphQL query/, error.message)
+    assert_equal "422", error.response_code
+  end
+
+  test "should handle 403 forbidden without rate limit" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 403, body: { message: "Forbidden" }.to_json)
+
+    error = assert_raises(GithubIssuesService::GithubApiError) do
+      @service.fetch_issues
+    end
+    assert_match(/Forbidden access to GitHub API/, error.message)
+    assert_equal "403", error.response_code
+  end
+
+  test "should handle other HTTP error codes" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 500, body: { message: "Internal Server Error" }.to_json)
+
+    error = assert_raises(GithubIssuesService::GithubApiError) do
+      @service.fetch_issues
+    end
+    assert_match(/GitHub API error: 500/, error.message)
+    assert_equal "500", error.response_code
+  end
+
+  test "should handle empty token" do
+    error = assert_raises(GithubIssuesService::AuthenticationError) do
+      GithubIssuesService.new("owner", "repo", token: "")
+    end
+    assert_equal "GitHub token is required", error.message
+  end
+
+  test "should handle nil repository data in response" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: { data: { repository: nil } }.to_json)
+
+    error = assert_raises(GithubIssuesService::RepositoryNotFoundError) do
+      @service.fetch_issues
+    end
+    assert_match(/Repository rails\/rails not found/, error.message)
+  end
+
+  test "should handle issues with nil author" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issues: {
+              pageInfo: { hasNextPage: false, endCursor: nil },
+              nodes: [
+                {
+                  id: "gid://github/Issue/1",
+                  number: 1,
+                  title: "Test Issue",
+                  body: "Test body",
+                  state: "OPEN",
+                  createdAt: "2024-01-01T00:00:00Z",
+                  updatedAt: "2024-01-01T00:00:00Z",
+                  closedAt: nil,
+                  url: "https://github.com/test/test/issues/1",
+                  author: nil,
+                  labels: { nodes: [] },
+                  assignees: { nodes: [] },
+                  milestone: nil
+                }
+              ]
+            }
+          }
+        }
+      }.to_json)
+
+    result = @service.fetch_issues
+    issue = result[:issues].first
+    assert_nil issue[:author]
+  end
+
+  test "should handle issues with nil milestone" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issues: {
+              pageInfo: { hasNextPage: false, endCursor: nil },
+              nodes: [
+                {
+                  id: "gid://github/Issue/1",
+                  number: 1,
+                  title: "Test Issue",
+                  body: "Test body",
+                  state: "OPEN",
+                  createdAt: "2024-01-01T00:00:00Z",
+                  updatedAt: "2024-01-01T00:00:00Z",
+                  closedAt: nil,
+                  url: "https://github.com/test/test/issues/1",
+                  author: { login: "test", name: "Test", email: "test@example.com" },
+                  labels: { nodes: [] },
+                  assignees: { nodes: [] },
+                  milestone: nil
+                }
+              ]
+            }
+          }
+        }
+      }.to_json)
+
+    result = @service.fetch_issues
+    issue = result[:issues].first
+    assert_nil issue[:milestone]
+  end
+
+  test "should handle issues with closed_at timestamp" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issues: {
+              pageInfo: { hasNextPage: false, endCursor: nil },
+              nodes: [
+                {
+                  id: "gid://github/Issue/1",
+                  number: 1,
+                  title: "Test Issue",
+                  body: "Test body",
+                  state: "CLOSED",
+                  createdAt: "2024-01-01T00:00:00Z",
+                  updatedAt: "2024-01-01T12:00:00Z",
+                  closedAt: "2024-01-01T12:00:00Z",
+                  url: "https://github.com/test/test/issues/1",
+                  author: { login: "test", name: "Test", email: "test@example.com" },
+                  labels: { nodes: [] },
+                  assignees: { nodes: [] },
+                  milestone: nil
+                }
+              ]
+            }
+          }
+        }
+      }.to_json)
+
+    result = @service.fetch_issues
+    issue = result[:issues].first
+    assert_not_nil issue[:closed_at]
+    assert_instance_of Time, issue[:closed_at]
+  end
+
+  test "should handle milestone with nil due date" do
+    stub_request(:post, GithubIssuesService::GITHUB_GRAPHQL_URL)
+      .to_return(status: 200, body: {
+        data: {
+          repository: {
+            issues: {
+              pageInfo: { hasNextPage: false, endCursor: nil },
+              nodes: [
+                {
+                  id: "gid://github/Issue/1",
+                  number: 1,
+                  title: "Test Issue",
+                  body: "Test body",
+                  state: "OPEN",
+                  createdAt: "2024-01-01T00:00:00Z",
+                  updatedAt: "2024-01-01T00:00:00Z",
+                  closedAt: nil,
+                  url: "https://github.com/test/test/issues/1",
+                  author: { login: "test", name: "Test", email: "test@example.com" },
+                  labels: { nodes: [] },
+                  assignees: { nodes: [] },
+                  milestone: {
+                    title: "Test Milestone",
+                    description: "Test Description",
+                    dueOn: nil
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }.to_json)
+
+    result = @service.fetch_issues
+    issue = result[:issues].first
+    assert_not_nil issue[:milestone]
+    assert_nil issue[:milestone][:due_on]
+  end
+
   private
 
   def stub_successful_graphql_response

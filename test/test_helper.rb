@@ -14,6 +14,12 @@ SimpleCov.start "rails" do
   # Enable merging for parallel test support
   use_merging true
 
+  # Configure formatters for both HTML and console output
+  SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new([
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::SimpleFormatter
+  ])
+
   # Add exclusions for typical Rails files that don't need testing
   add_filter "/config/"
   add_filter "/db/"
@@ -41,6 +47,15 @@ module ActiveSupport
 
     parallelize_teardown do |worker|
       SimpleCov.result
+
+      # Show detailed coverage only from the main process after all workers finish
+      if worker == 1
+        sleep 0.1 # Give a moment for coverage to be written
+        if File.exist?("coverage/index.html") && File.exist?("bin/coverage")
+          puts ""
+          system("bin/coverage")
+        end
+      end
     end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
