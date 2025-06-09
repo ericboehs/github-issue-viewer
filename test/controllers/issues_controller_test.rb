@@ -17,7 +17,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
   test "should get index" do
     get issues_url
     assert_response :success
-    assert_select "h1", "GitHub Issues"
+    assert_select "label", "Repository Owner"
   end
 
   test "should redirect to account if no github token" do
@@ -41,7 +41,7 @@ class IssuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h2", "rails/rails"
-    assert_select ".space-y-3 > .bg-white", count: 2 # 2 issue cards
+    assert_select ".divide-y .p-4", count: 2 # 2 issue cards
   end
 
   test "should handle authentication error" do
