@@ -1,6 +1,12 @@
 #!/usr/bin/env ruby
 
-require 'nokogiri'
+require 'bundler/inline'
+
+gemfile do
+  source 'https://rubygems.org'
+  gem 'nokogiri'
+end
+
 require 'set'
 
 # Path to the SimpleCov HTML report
@@ -32,23 +38,23 @@ missed_branches = branch_summary_spans[2]&.text&.strip
 # Extract timestamp
 timestamp = doc.css('.timestamp .timeago').first&.attr('title')
 
-puts "📊 SimpleCov Coverage Report"
+puts "## 📊 SimpleCov Coverage Report"
 puts "Generated: #{timestamp}"
 puts ""
 
-puts "📈 Line Coverage: #{line_percent}"
+puts "### 📈 Line Coverage: #{line_percent}"
 puts "  ✅ #{covered_lines}/#{total_lines} lines covered"
 puts "  ❌ #{missed_lines} lines missed"
 puts ""
 
-puts "🌳 Branch Coverage: #{branch_percent}"
+puts "### 🌳 Branch Coverage: #{branch_percent}"
 puts "  ✅ #{covered_branches}/#{total_branches} branches covered"
 puts "  ❌ #{missed_branches} branches missed"
 puts ""
 
 # Show file-by-file breakdown if there are missed lines or branches
 if missed_lines.to_i > 0 || missed_branches.to_i > 0
-  puts "📋 Files with missing coverage:"
+  puts "### 📋 Files with missing coverage:"
   puts ""
 
   files_shown = Set.new

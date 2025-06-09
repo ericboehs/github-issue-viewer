@@ -14,12 +14,6 @@ SimpleCov.start "rails" do
   # Enable merging for parallel test support
   use_merging true
 
-  # Configure formatters for both HTML and console output
-  SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new([
-    SimpleCov::Formatter::HTMLFormatter,
-    SimpleCov::Formatter::SimpleFormatter
-  ])
-
   # Add exclusions for typical Rails files that don't need testing
   add_filter "/config/"
   add_filter "/db/"
