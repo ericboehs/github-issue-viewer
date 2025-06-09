@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     delete :destroy_all_sessions
   end
   resources :issues, only: [ :index ]
+  get "issues/:owner/:repository/:number", to: "issues#show", as: "issue", constraints: { owner: /[^\/]+/, repository: /[^\/]+/ }
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
