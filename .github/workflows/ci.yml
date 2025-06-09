@@ -105,8 +105,21 @@ jobs:
       - name: Coverage summary
         if: always()
         run: |
-          if [ -f coverage/.last_run.json ]; then
-            echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/index.html ] && [ -f bin/coverage ]; then
+            echo "## 📊 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Install nokogiri for coverage parsing
+            gem install nokogiri
+
+            # Run bin/coverage and capture output, formatting for GitHub
+            bin/coverage | sed 's/📊/## 📊/; s/📈/### 📈/; s/🌳/### 🌳/; s/📋/### 📋/' >> $GITHUB_STEP_SUMMARY
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📋 [View detailed coverage report in artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          elif [ -f coverage/.last_run.json ]; then
+            echo "## 📊 Coverage Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             ruby -e "
               require 'json'
