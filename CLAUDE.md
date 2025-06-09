@@ -68,6 +68,8 @@ bin/importmap unpin <package>    # Remove JavaScript package
 ### Code Style
 This project follows Rails Omakase conventions. RuboCop is configured to enforce these standards. Always run `bin/rubocop` before committing.
 
+**EditorConfig**: This project uses EditorConfig for consistent formatting. Always run `editorconfig-checker` before committing to ensure proper indentation, line endings, and whitespace handling.
+
 ### Testing Approach
 - Minitest for all tests
 - System tests use Capybara with Selenium
@@ -108,3 +110,5 @@ This project includes intelligent git hooks:
 - **Pre-commit**: Runs EditorConfig, rubocop, and tests for all commits
 - **Post-checkout**: Automatically runs `bundle install` and `db:migrate` when needed
 - Install with: `bin/install-hooks`
+
+**IMPORTANT**: Never use `git commit --no-verify` to bypass pre-commit checks! If code coverage is failing, write more tests to increase coverage instead of bypassing the validation.

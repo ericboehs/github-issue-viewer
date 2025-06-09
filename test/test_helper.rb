@@ -41,6 +41,15 @@ module ActiveSupport
 
     parallelize_teardown do |worker|
       SimpleCov.result
+
+      # Show detailed coverage only from the main process after all workers finish
+      if worker == 1
+        sleep 0.1 # Give a moment for coverage to be written
+        if File.exist?("coverage/index.html") && File.exist?("bin/coverage")
+          puts ""
+          system("bin/coverage")
+        end
+      end
     end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.

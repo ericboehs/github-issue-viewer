@@ -105,16 +105,9 @@ jobs:
       - name: Coverage summary
         if: always()
         run: |
-          if [ -f coverage/.last_run.json ]; then
-            echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            ruby -e "
-              require 'json'
-              data = JSON.parse(File.read('coverage/.last_run.json'))
-              puts \"Line Coverage: #{data['result']['line']}%\"
-              puts \"Branch Coverage: #{data['result']['branch']}%\"
-            " >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/index.html ] && [ -f bin/coverage ]; then
+            # Run bin/coverage and capture output directly
+            bin/coverage >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Keep screenshots from failed system tests
