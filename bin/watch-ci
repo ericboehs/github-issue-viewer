@@ -54,7 +54,8 @@ show_ci_status() {
   echo ""
 
   # Get PR checks
-  if PR_CHECKS=$(gh pr checks 2>/dev/null); then
+  PR_CHECKS=$(gh pr checks 2>/dev/null) || true
+  if [ -n "$PR_CHECKS" ]; then
     echo "📊 CI Check Results:"
     echo "===================="
 
