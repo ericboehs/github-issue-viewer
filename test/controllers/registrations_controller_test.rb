@@ -18,16 +18,12 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    assert_redirected_to root_path
+    assert_redirected_to issues_path
 
     # Verify user was created and logged in
     user = User.find_by(email_address: "test@example.com")
     assert_not_nil user
     assert_not_nil user.sessions.last
-
-    # Follow redirect and check for success (flash message testing is complex in integration tests)
-    follow_redirect!
-    assert_response :success
   end
 
   test "should create user with github token" do

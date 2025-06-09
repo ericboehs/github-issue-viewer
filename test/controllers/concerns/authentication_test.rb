@@ -13,12 +13,12 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
   test "should authenticate users properly" do
     # Test that authentication concern is working by testing session creation
     post session_path, params: { email_address: @user.email_address, password: "password123" }
-    assert_redirected_to root_path
+    assert_redirected_to issues_path
   end
 
   test "should redirect to original URL after authentication" do
     # Test basic redirect functionality
     post session_path, params: { email_address: @user.email_address, password: "password123" }
-    assert_redirected_to root_path
+    assert_redirected_to issues_path
   end
 end

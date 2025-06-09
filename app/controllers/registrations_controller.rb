@@ -10,7 +10,7 @@ class RegistrationsController < ApplicationController
 
     if @user.save
       start_new_session_for @user
-      redirect_to root_path, notice: "Welcome, #{@user.email_address}! You have signed up successfully."
+      redirect_to issues_path, notice: "Welcome, #{@user.email_address}! You have signed up successfully."
     else
       render :new, status: :unprocessable_entity
     end
