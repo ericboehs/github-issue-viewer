@@ -68,6 +68,8 @@ bin/importmap unpin <package>    # Remove JavaScript package
 ### Code Style
 This project follows Rails Omakase conventions. RuboCop is configured to enforce these standards. Always run `bin/rubocop` before committing.
 
+**EditorConfig**: This project uses EditorConfig for consistent formatting. Always run `editorconfig-checker` before committing to ensure proper indentation, line endings, and whitespace handling.
+
 ### Testing Approach
 - Minitest for all tests
 - System tests use Capybara with Selenium
