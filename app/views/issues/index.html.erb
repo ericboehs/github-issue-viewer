@@ -1,0 +1,221 @@
+<% content_for :title, "GitHub Issues" %>
+
+<div class="space-y-6">
+  <!-- Header Section -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">GitHub Issues</h1>
+
+    <!-- Repository Form -->
+    <%= form_with url: issues_path, method: :get, local: true, class: "space-y-4", data: { controller: "issues", turbo_frame: "issues-content" } do |form| %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <%= form.label :owner, "Repository Owner", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_field :owner, value: @owner, placeholder: "e.g., rails",
+                              class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" %>
+        </div>
+
+        <div>
+          <%= form.label :repository, "Repository Name", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_field :repository, value: @repository, placeholder: "e.g., rails",
+                              class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" %>
+        </div>
+
+        <div>
+          <%= form.label :state, "Issue State", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.select :state, [["Open", "open"], ["Closed", "closed"], ["All", "all"]],
+                          { selected: @state },
+                          { class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" } %>
+        </div>
+
+        <div class="flex items-end">
+          <%= form.submit "Search", class: "w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <turbo-frame id="issues-content">
+    <% if @error.present? %>
+      <!-- Error State -->
+      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+        <div class="flex items-center">
+          <svg class="w-6 h-6 text-red-600 dark:text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <h3 class="text-lg font-medium text-red-800 dark:text-red-200">Error</h3>
+            <p class="text-red-600 dark:text-red-300 mt-1"><%= @error %></p>
+          </div>
+        </div>
+      </div>
+    <% elsif @owner.blank? || @repository.blank? %>
+      <!-- Empty State -->
+      <div class="bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-12 text-center">
+        <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Repository Selected</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">Enter a repository owner and name above to view issues.</p>
+        <div class="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+          <p><strong>Example:</strong> rails/rails</p>
+          <p><strong>Example:</strong> microsoft/vscode</p>
+        </div>
+      </div>
+    <% elsif @issues.present? %>
+      <!-- Issues Content -->
+      <div class="space-y-4">
+        <!-- Filters and Sorting -->
+        <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div class="flex items-center space-x-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                <%= @owner %>/<%= @repository %>
+              </h2>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                <%= pluralize(@issues.length, 'issue') %>
+              </span>
+            </div>
+
+            <!-- Sort Controls -->
+            <%= form_with url: issues_path, method: :get, local: true, class: "flex items-center space-x-2", data: { turbo_frame: "issues-content" } do |form| %>
+              <%= form.hidden_field :owner, value: @owner %>
+              <%= form.hidden_field :repository, value: @repository %>
+              <%= form.hidden_field :state, value: @state %>
+
+              <%= form.select :sort, [["Created", "created"], ["Updated", "updated"], ["Title", "title"]],
+                              { selected: @sort },
+                              { class: "px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white", onchange: "this.form.submit();" } %>
+
+              <%= form.select :direction, [["Newest first", "desc"], ["Oldest first", "asc"]],
+                              { selected: @direction },
+                              { class: "px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white", onchange: "this.form.submit();" } %>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Issues List -->
+        <div class="space-y-3">
+          <% @issues.each do |issue| %>
+            <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
+              <div class="flex items-start space-x-4">
+                <!-- Issue State Icon -->
+                <div class="flex-shrink-0 mt-1">
+                  <% if issue[:state] == "open" %>
+                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"/>
+                    </svg>
+                  <% else %>
+                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M11.28 6.78a.75.75 0 00-1.06-1.06L7.25 8.69 5.78 7.22a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.06 0l3.5-3.5z"/>
+                      <path d="M16 8A8 8 0 110 8a8 8 0 0116 0zm-8-6.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13z"/>
+                    </svg>
+                  <% end %>
+                </div>
+
+                <!-- Issue Content -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <%= link_to issue[:url], target: "_blank", rel: "noopener",
+                                class: "text-lg font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200" do %>
+                      <%= issue[:title] %>
+                      <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                      </svg>
+                    <% end %>
+                    <span class="text-gray-500 dark:text-gray-400 text-sm">#<%= issue[:number] %></span>
+                  </div>
+
+                  <!-- Issue Meta -->
+                  <div class="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    <span>opened <%= time_ago_in_words(issue[:created_at]) %> ago</span>
+                    <% if issue[:author] %>
+                      <span>by <%= issue[:author][:login] %></span>
+                    <% end %>
+                    <% if issue[:updated_at] != issue[:created_at] %>
+                      <span>• updated <%= time_ago_in_words(issue[:updated_at]) %> ago</span>
+                    <% end %>
+                    <% if issue[:closed_at] %>
+                      <span>• closed <%= time_ago_in_words(issue[:closed_at]) %> ago</span>
+                    <% end %>
+                  </div>
+
+                  <!-- Labels -->
+                  <% if issue[:labels].any? %>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      <% issue[:labels].each do |label| %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border"
+                              style="background-color: #<%= label[:color] %>20; border-color: #<%= label[:color] %>; color: #<%= label[:color] %>;">
+                          <%= label[:name] %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% end %>
+
+                  <!-- Issue Body Preview -->
+                  <% if issue[:body].present? %>
+                    <div class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3">
+                      <%= truncate(strip_tags(issue[:body]), length: 200) %>
+                    </div>
+                  <% end %>
+
+                  <!-- Assignees and Milestone -->
+                  <% if issue[:assignees].any? || issue[:milestone] %>
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                      <div class="flex items-center space-x-4">
+                        <% if issue[:assignees].any? %>
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                              <%= issue[:assignees].map { |a| a[:login] }.join(", ") %>
+                            </span>
+                          </div>
+                        <% end %>
+
+                        <% if issue[:milestone] %>
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                              <%= issue[:milestone][:title] %>
+                            </span>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Pagination -->
+        <% if @has_next_page %>
+          <div class="text-center">
+            <%= link_to issues_path(owner: @owner, repository: @repository, state: @state, sort: @sort, direction: @direction, after_cursor: @end_cursor),
+                        class: "inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" do %>
+              Load More Issues
+              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <!-- No Issues State -->
+      <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-600 rounded-lg p-12 text-center">
+        <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Issues Found</h3>
+        <p class="text-gray-600 dark:text-gray-400">
+          No <%= @state %> issues found for <%= @owner %>/<%= @repository %>.
+        </p>
+      </div>
+    <% end %>
+  </turbo-frame>
+</div>

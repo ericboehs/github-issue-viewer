@@ -1,0 +1,65 @@
+class IssuesController < ApplicationController
+  before_action :ensure_github_token
+
+  def index
+    @owner = params[:owner]
+    @repository = params[:repository]
+    @state = params[:state] || "open"
+    @sort = params[:sort] || "created"
+    @direction = params[:direction] || "desc"
+    @per_page = (params[:per_page] || 20).to_i.clamp(1, 100)
+
+    if @owner.present? && @repository.present?
+      begin
+        @github_service = GithubIssuesService.new(@owner, @repository, token: Current.user.github_token)
+
+        # Convert state parameter to uppercase for GraphQL API
+        graphql_state = @state.upcase
+
+        result = @github_service.fetch_issues(limit: @per_page, state: graphql_state)
+        @issues = result[:issues]
+        @has_next_page = result[:has_next_page]
+        @end_cursor = result[:end_cursor]
+
+        # Apply client-side sorting if needed (since GraphQL API has limited sorting options)
+        @issues = sort_issues(@issues) unless @sort == "created" && @direction == "desc"
+
+      rescue GithubIssuesService::AuthenticationError => e
+        @error = "GitHub authentication failed. Please check your token."
+      rescue GithubIssuesService::RepositoryNotFoundError => e
+        @error = "Repository #{@owner}/#{@repository} not found or you don't have access to it."
+      rescue GithubIssuesService::RateLimitError => e
+        @error = "GitHub API rate limit exceeded. Please try again later."
+      rescue GithubIssuesService::GithubApiError => e
+        @error = "GitHub API error: #{e.message}"
+      rescue => e
+        @error = "An unexpected error occurred: #{e.message}"
+      end
+    end
+  end
+
+  private
+
+  def ensure_github_token
+    unless Current.user&.github_token.present?
+      redirect_to account_path, alert: "Please configure your GitHub token to view issues."
+    end
+  end
+
+  def sort_issues(issues)
+    case @sort
+    when "updated"
+      issues.sort_by { |issue| issue[:updated_at] }
+    when "title"
+      issues.sort_by { |issue| issue[:title].downcase }
+    when "state"
+      issues.sort_by { |issue| issue[:state] }
+    when "created"
+      issues.sort_by { |issue| issue[:created_at] }
+    else
+      issues
+    end.then do |sorted_issues|
+      @direction == "desc" ? sorted_issues.reverse : sorted_issues
+    end
+  end
+end
