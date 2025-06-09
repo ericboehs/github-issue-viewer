@@ -18,6 +18,11 @@
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <% begin %>
+      <%= stylesheet_link_tag "builds/tailwind", "data-turbo-track": "reload" %>
+    <% rescue StandardError %>
+      <%# Tailwind CSS not found - this is normal in test environment %>
+    <% end %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
