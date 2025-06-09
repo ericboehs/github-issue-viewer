@@ -6,4 +6,5 @@ module.exports = {
     './app/assets/stylesheets/**/*.css',
     './app/javascript/**/*.js'
   ]
+  // Force cache invalidation
 }
