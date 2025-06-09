@@ -57,11 +57,12 @@ class GithubIssuesService
 
   def build_issues_query(limit:, after_cursor:, state:)
     after_clause = after_cursor ? %Q(, after: "#{after_cursor}") : ""
+    states_clause = state ? %Q(, states: [#{state}]) : ""
 
     <<~GRAPHQL
       query {
         repository(owner: "#{@owner}", name: "#{@repository_name}") {
-          issues(first: #{limit}, states: [#{state}], orderBy: {field: CREATED_AT, direction: DESC}#{after_clause}) {
+          issues(first: #{limit}#{states_clause}, orderBy: {field: CREATED_AT, direction: DESC}#{after_clause}) {
             totalCount
             pageInfo {
               hasNextPage

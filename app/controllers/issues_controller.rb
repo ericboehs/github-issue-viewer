@@ -24,8 +24,8 @@ class IssuesController < ApplicationController
       begin
         @github_service = GithubIssuesService.new(@owner, @repository, token: Current.user.github_token)
 
-        # Convert state parameter to uppercase for GraphQL API
-        graphql_state = @state.upcase
+        # Convert state parameter to uppercase for GraphQL API, handle "all" case
+        graphql_state = @state == "all" ? nil : @state.upcase
 
         result = @github_service.fetch_issues(limit: @per_page, after_cursor: @after_cursor, state: graphql_state)
         @issues = result[:issues]
@@ -44,7 +44,7 @@ class IssuesController < ApplicationController
         }
 
       rescue GithubIssuesService::AuthenticationError => e
-        @error = "GitHub authentication failed. Please check your token."
+        @error = "GitHub authentication failed. Please #{view_context.link_to('check your token', edit_account_path, class: 'underline hover:text-red-800 dark:hover:text-red-300', data: { turbo: false })}.".html_safe
       rescue GithubIssuesService::RepositoryNotFoundError => e
         @error = "Repository #{@owner}/#{@repository} not found or you don't have access to it."
       rescue GithubIssuesService::RateLimitError => e

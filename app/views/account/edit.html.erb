@@ -1,11 +1,4 @@
 <div class="mx-auto md:w-2/3 w-full">
-  <% if alert = flash[:alert] %>
-    <p class="py-2 px-3 bg-red-50 dark:bg-red-900 mb-5 text-red-500 dark:text-red-300 font-medium rounded-lg inline-block" id="alert"><%= alert %></p>
-  <% end %>
-
-  <% if notice = flash[:notice] %>
-    <p class="py-2 px-3 bg-green-50 dark:bg-green-900 mb-5 text-green-500 dark:text-green-300 font-medium rounded-lg inline-block" id="notice"><%= notice %></p>
-  <% end %>
 
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700">
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -37,14 +30,14 @@
           <div>
             <%= form.label :github_token, "GitHub Token", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
             <%= form.text_field :github_token,
-                placeholder: "ghp_xxxxxxxxxxxxxxxxxxxx",
+                placeholder: "Enter your GitHub token...",
                 autocomplete: "off",
                 class: "block shadow-sm rounded-md border border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               <strong>How to get a GitHub token:</strong><br>
-              1. Go to GitHub → Settings → Developer settings → Personal access tokens<br>
-              2. Generate a new token (classic) with appropriate permissions<br>
-              3. Copy and paste the token here. It will be securely encrypted.
+              1. Go to GitHub → Settings → Developer settings → <a href="https://github.com/settings/tokens" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">Personal access tokens</a><br>
+              2. Generate a new token (classic or fine-grained) with appropriate permissions<br>
+              3. Copy and paste the token here. It will be encrypted using AES-256-GCM.
             </p>
             <% if @user.github_token.present? %>
               <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
