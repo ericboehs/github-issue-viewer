@@ -82,6 +82,13 @@ This project follows Rails Omakase conventions. RuboCop is configured to enforce
 
 ## Claude Code Workflow
 
+### Working on GitHub Issues
+**IMPORTANT**: When working on a specific GitHub issue:
+
+1. **Always include issue references** in commit messages using "Fixes #123", "Closes #123", or "Resolves #123"
+2. **This automatically closes the issue** when the PR is merged
+3. **Reference the issue number** in PR titles and descriptions for traceability
+
 ### After Pushing to a PR
 **IMPORTANT**: After every push to a PR branch, you MUST:
 
